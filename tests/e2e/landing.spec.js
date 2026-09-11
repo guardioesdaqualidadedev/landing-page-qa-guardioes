@@ -370,3 +370,45 @@ test.describe("Landing — syllabus CTFL", () => {
     await expect(page.getByTestId("footer-syllabus-pdf")).toHaveAttribute("href", /\.pdf$/);
   });
 });
+
+test.describe("Landing — chamada final", () => {
+  test("oferece os três canais de entrada, com o Discord em destaque", async ({ page }) => {
+    await page.goto("/");
+
+    const cta = page.getByTestId("cta-final");
+    await expect(cta).toBeVisible();
+
+    // Os três botões apontam para os canais reais e abrem em nova aba.
+    for (const [testid, dominio] of [
+      ["cta-final-discord", /discord\.gg/],
+      ["cta-final-whatsapp", /chat\.whatsapp\.com/],
+      ["cta-final-linkedin", /linkedin\.com/],
+    ]) {
+      const botao = page.getByTestId(testid);
+      await expect(botao).toBeVisible();
+      await expect(botao).toHaveAttribute("href", dominio);
+      await expect(botao).toHaveAttribute("target", "_blank");
+      await expect(botao).toHaveAttribute("rel", /noopener/);
+    }
+  });
+});
+
+test.describe("Landing — botões do hero", () => {
+  test("apresenta Discord, Manifesto e Playground nessa ordem", async ({ page }) => {
+    await page.goto("/");
+
+    // A ordem é uma decisão de produto: o Playground fecha a sequência, depois
+    // de a pessoa ter tido a chance de ler o Manifesto.
+    const rotulos = await page
+      .getByTestId("hero")
+      .getByRole("link", { includeHidden: false })
+      .filter({ hasText: /Discord|Manifesto|Playground/ })
+      .allInnerTexts();
+
+    expect(rotulos.map((t) => t.trim())).toEqual([
+      "Entrar no Discord →",
+      "Ler o Manifesto",
+      "▶ Abrir o Playground QA",
+    ]);
+  });
+});

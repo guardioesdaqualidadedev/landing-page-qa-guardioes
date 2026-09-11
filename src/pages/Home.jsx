@@ -80,14 +80,19 @@ function Hero() {
           </a>
           <Link
             className="qa-btn qa-btn-fantasma"
+            to="/manifesto"
+            data-testid="cta-manifesto"
+            onClick={() => track("hero_manifesto")}
+          >
+            Ler o Manifesto
+          </Link>
+          <Link
+            className="qa-btn qa-btn-fantasma"
             to="/playground"
             data-testid="cta-playground"
             onClick={() => track("hero_playground")}
           >
             ▶ Abrir o Playground QA
-          </Link>
-          <Link className="qa-btn qa-btn-fantasma" to="/manifesto" onClick={() => track("hero_manifesto")}>
-            Ler o Manifesto
           </Link>
         </Reveal>
 
@@ -592,7 +597,8 @@ function Chamada() {
         </h2>
         <p style={{ fontSize: 17, lineHeight: 1.6, maxWidth: 620, margin: "16px auto 28px", opacity: 0.92 }}>
           Entre no Discord para pegar seus cargos e liberar os canais — é lá que ficam
-          automação, novidades, vagas e o banco de currículos.
+          automação, novidades, vagas e o banco de currículos. No WhatsApp você acompanha
+          o dia a dia e fica sabendo na hora.
         </p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           <a
@@ -600,6 +606,7 @@ function Chamada() {
             href={LINKS.discord}
             target="_blank"
             rel="noopener noreferrer"
+            data-testid="cta-final-discord"
             style={{ background: COLORS.band, color: COLORS.onBand }}
             onClick={() => track("cta_final_discord")}
           >
@@ -607,9 +614,21 @@ function Chamada() {
           </a>
           <a
             className="qa-btn"
+            href={LINKS.whatsapp}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="cta-final-whatsapp"
+            style={{ background: "rgba(11,35,65,.14)", color: COLORS.onAccent, boxShadow: "inset 0 0 0 1.5px rgba(11,35,65,.4)" }}
+            onClick={() => track("cta_final_whatsapp")}
+          >
+            Entrar no WhatsApp
+          </a>
+          <a
+            className="qa-btn"
             href={LINKS.linkedin}
             target="_blank"
             rel="noopener noreferrer"
+            data-testid="cta-final-linkedin"
             style={{ background: "rgba(11,35,65,.14)", color: COLORS.onAccent, boxShadow: "inset 0 0 0 1.5px rgba(11,35,65,.4)" }}
           >
             Seguir no LinkedIn
