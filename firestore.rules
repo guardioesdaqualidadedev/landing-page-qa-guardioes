@@ -1,0 +1,20 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Contador total de visitantes da comunidade (documento único `stats/visits`).
+    //  • leitura liberada — qualquer visitante pode ver o total;
+    //  • escrita só aceita documentos com EXCLUSIVAMENTE o campo numérico `count`,
+    //    evitando que alguém grave lixo na coleção.
+    match /stats/{docId} {
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasOnly(['count'])
+                            && request.resource.data.count is int;
+    }
+
+    // Tudo o que não for `stats` fica negado por padrão (seguro).
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,41 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+
+# Variáveis de ambiente — as credenciais do Firebase ficam aqui e NÃO vão para o Git
+.env
+.env.local
+.env.*.local
+
+# Firebase (cache de deploy / logs)
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+.runtimeconfig.json
+.firebaserc
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Relatórios de teste (gerados localmente)
+coverage/
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Vídeos e gravações dos encontros (grandes demais para o Git — limite de 100MB do GitHub)
+*.mp4
+*.mov
+
+# Artefatos do Playwright MCP
+.playwright-mcp/

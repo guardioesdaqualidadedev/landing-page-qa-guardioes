@@ -1,0 +1,47 @@
+*SITE DA COMUNIDADE — PRÓXIMOS PASSOS* 
+
+Melhorias levantadas no Encontro 11, depois que o site foi publicado no Firebase. Marquem o que for concluindo.
+
+*1. VALIDAR COM AMANDA E CAMILA*
+_Isso destrava o resto — o time precisa da decisão de vocês duas antes de mexer._
+
+☐ As fontes do sistema estão conforme o design proposto? (Amanda)
+☐ Incluir o link do Projeto Social Garapuvu no rodapé do site?
+☐ Junto com isso: validar as diretrizes de acessibilidade do rodapé em conjunto com o Garapuvu
+☐ Manter o contador de visitas na página, ou tirar?
+☐ O que acham da ideia de mini certificados para quem completar os desafios do Playground?
+☐ Qual a prioridade de vocês entre as melhorias abaixo, para a 2ª versão do site?
+
+*2. CORREÇÕES VISUAIS*
+
+☐ Logos e banners alternando automaticamente entre tema claro e escuro (hoje o logo é o mesmo nos dois)
+☐ Favicon: trocar o ícone quadrado por uma versão circular e com mais nitidez
+☐ Substituir as listas com hashtag (#canal) por numeração ou ícones
+☐ Conferir a formatação de datas no padrão brasileiro (dd/mm/aaaa) em todas as telas
+
+*3. CONTEÚDO*
+
+☐ Revisar os 12 princípios do Manifesto Ágil de Testes
+☐ Atualizar as URLs reais do Discord e do WhatsApp na página (hoje estão como link provisório)
+
+*4. COLETAR FEEDBACK DA COMUNIDADE*
+
+☐ Enviar o formulário de pesquisa aos membros (12 perguntas, 3 minutos, anônimo)
+☐ Divulgar no grupo Avisos do WhatsApp e fixar no Discord
+☐ Reforçar uma única vez, uma semana depois
+☐ Meta de resposta: no mínimo 20% dos membros ativos
+☐ Devolutiva pública do resultado em até 30 dias — sem isso, ninguém responde o próximo
+
+*5. TESTAR COM O GRUPO*
+
+☐ Todos acessarem o link e testar a navegação no computador e no celular
+☐ Reportar quebras de layout, links que não abrem e qualquer erro encontrado
+☐ Repetir os testes depois que o domínio oficial estiver no ar
+
+*6. DEPOIS DO DOMÍNIO*
+
+☐ Adquirir o domínio oficial da comunidade
+☐ Publicar novamente e validar o acesso (o aviso de segurança do navegador é normal em domínio novo e some com o tempo)
+☐ Montar a 2ª versão otimizada do site com base no feedback das administradoras e do grupo
+
+Quem tiver sugestão que não está aqui, manda no *#feedbacks-melhorias* do Discord.
