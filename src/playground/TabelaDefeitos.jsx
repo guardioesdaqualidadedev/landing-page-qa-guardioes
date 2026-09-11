@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { COLORS } from "../theme.js";
 import { SEVERIDADES, STATUS, MODULOS } from "./dominio.js";
 import { prepararTabela, filtrarDefeitos, resumoPorSeveridade } from "./tabela.js";
+import { formatarDataBR } from "../utils/datas.js";
 
 const POR_PAGINA = 5;
 
@@ -228,8 +229,11 @@ export default function TabelaDefeitos({ defeitos, onAtualizarStatus, onExcluir 
                       </select>
                     </td>
                     <td style={{ color: COLORS.textSoft, textAlign: "right" }}>{d.ocorrencias}</td>
+                    {/* A data é guardada em ISO e SEMPRE exibida em dd/mm/aaaa,
+                        pelo mesmo formatador do resto do site — o resultado não
+                        pode depender do idioma do navegador de quem visita. */}
                     <td style={{ color: COLORS.muted, whiteSpace: "nowrap" }}>
-                      {new Date(`${d.data}T00:00:00`).toLocaleDateString("pt-BR")}
+                      {formatarDataBR(d.data)}
                     </td>
                     <td>
                       <button

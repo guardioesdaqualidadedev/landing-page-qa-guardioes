@@ -97,7 +97,7 @@ describe("validarDefeito — data de detecção", () => {
 
   it("rejeita data no futuro", () => {
     expect(validarDefeito(base({ data: "2026-09-10" }), HOJE).data).toBe(
-      "A data de detecção não pode estar no futuro."
+      "A data de detecção não pode estar no futuro (hoje é 09/09/2026)."
     );
   });
 
@@ -107,6 +107,35 @@ describe("validarDefeito — data de detecção", () => {
 
   it("aceita exatamente a data mínima", () => {
     expect(validarDefeito(base({ data: LIMITES.dataMinima }), HOJE).data).toBeUndefined();
+  });
+
+  // ── Formato brasileiro nas mensagens ───────────────────────────────────
+  // O limite é guardado em ISO porque é o que o <input type="date"> usa. Se
+  // ele vazar para a mensagem, o visitante lê "2020-01-01" — foi exatamente o
+  // defeito encontrado no playground.
+  it("mostra o limite mínimo em dd/mm/aaaa, nunca em ISO", () => {
+    const msg = validarDefeito(base({ data: "2019-12-31" }), HOJE).data;
+    expect(msg).toContain("01/01/2020");
+    expect(msg).not.toContain("2020-01-01");
+  });
+
+  it("nenhuma mensagem de data escapa no formato ISO", () => {
+    const casos = ["2019-12-31", "2026-09-10", "31/12/2019", "", "abacaxi", "2026-02-31"];
+    for (const data of casos) {
+      const msg = validarDefeito(base({ data }), HOJE).data;
+      expect(msg, `caso ${JSON.stringify(data)}`).toBeTypeOf("string");
+      expect(msg, `caso ${JSON.stringify(data)}`).not.toMatch(/\d{4}-\d{2}-\d{2}/);
+    }
+  });
+
+  it("diz qual é o formato esperado quando a data não dá para ler", () => {
+    expect(validarDefeito(base({ data: "31/12/2019" }), HOJE).data).toBe(
+      "Data inválida. Use o formato dd/mm/aaaa."
+    );
+  });
+
+  it("rejeita data que não existe no calendário (31 de fevereiro)", () => {
+    expect(validarDefeito(base({ data: "2026-02-31" }), HOJE).data).toContain("Data inválida");
   });
 });
 

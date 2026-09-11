@@ -4,7 +4,10 @@ import OrbitBackground from "../components/OrbitBackground.jsx";
 import FormularioDefeito from "../playground/FormularioDefeito.jsx";
 import TabelaDefeitos from "../playground/TabelaDefeitos.jsx";
 import Cenarios from "../playground/Cenarios.jsx";
+import Certificacao from "../playground/Certificacao.jsx";
 import { DEFEITOS_INICIAIS, proximoId } from "../playground/dominio.js";
+import { LIMITES } from "../playground/validacao.js";
+import { formatarDataBR, FORMATO_DATA_BR } from "../utils/datas.js";
 import { COLORS } from "../theme.js";
 import { track } from "../firebase.js";
 
@@ -12,6 +15,7 @@ const ABAS = [
   { id: "registrar", rotulo: "Registrar defeito" },
   { id: "tabela", rotulo: "Tabela de defeitos" },
   { id: "cenarios", rotulo: "Cenários de teste" },
+  { id: "certificado", rotulo: "Certificado" },
 ];
 
 // Aviso que some sozinho depois de alguns segundos. Usa role="status" para
@@ -210,7 +214,12 @@ export default function Playground() {
                     ["Módulo, severidade, ambiente", "obrigatórios, valores de lista fechada"],
                     ["Prioridade", "obrigatória: P1, P2 ou P3"],
                     ["E-mail", "formato nome@dominio.com"],
-                    ["Data de detecção", "obrigatória, não pode ser futura nem anterior a 2020-01-01"],
+                    [
+                      "Data de detecção",
+                      // O limite vem da própria validação, no formato brasileiro:
+                      // painel e mensagem de erro nunca podem divergir.
+                      `obrigatória, no formato ${FORMATO_DATA_BR}; não pode ser futura nem anterior a ${formatarDataBR(LIMITES.dataMinima)}`,
+                    ],
                     ["Ocorrências", "inteiro de 1 a 999"],
                     ["Passos", "de 20 a 600 caracteres"],
                     ["Aceite", "obrigatório marcar"],
@@ -239,6 +248,10 @@ export default function Playground() {
 
         <div role="tabpanel" id="painel-cenarios" aria-labelledby="aba-cenarios" hidden={aba !== "cenarios"}>
           {aba === "cenarios" && <Cenarios />}
+        </div>
+
+        <div role="tabpanel" id="painel-certificado" aria-labelledby="aba-certificado" hidden={aba !== "certificado"}>
+          {aba === "certificado" && <Certificacao />}
         </div>
       </div>
 

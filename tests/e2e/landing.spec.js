@@ -38,9 +38,32 @@ test.describe("Landing page da comunidade", () => {
     await expect(page.getByTestId("regras").locator("> *")).toHaveCount(10);
   });
 
-  test("mostra a governança com os três administradores", async ({ page }) => {
-    await expect(page.getByTestId("admins").locator("> *")).toHaveCount(3);
-    await expect(page.getByTestId("admins")).toContainText("Douglas");
+  test("mostra a governança com os quatro administradores", async ({ page }) => {
+    const admins = page.getByTestId("admins");
+    await expect(admins.locator("> *")).toHaveCount(4);
+    for (const nome of ["Douglas", "Camila", "Amanda", "Patrícia"]) {
+      await expect(admins).toContainText(nome);
+    }
+  });
+
+  test("cada administrador tem o próprio link de LinkedIn", async ({ page }) => {
+    const esperado = {
+      douglas: "douglas-adriano-queiroz",
+      camila: "camila-lopes-ferreira",
+      amanda: "amanda-marino",
+      patricia: "patricia-silva-correa",
+    };
+
+    for (const [quem, trecho] of Object.entries(esperado)) {
+      const icone = page.getByTestId(`admin-linkedin-${quem}`);
+      await expect(icone).toHaveAttribute("href", new RegExp(trecho));
+      await expect(icone).toHaveAttribute("target", "_blank");
+      await expect(icone).toHaveAttribute("rel", /noopener/);
+    }
+  });
+
+  test("Amanda aparece como liderança de Design", async ({ page }) => {
+    await expect(page.getByTestId("admins")).toContainText("Liderança de Design");
   });
 
   test("o cabeçalho e o rodapé aparecem em todas as visitas", async ({ page }) => {
@@ -54,6 +77,42 @@ test.describe("Landing page da comunidade", () => {
     await expect(linkedin).toHaveAttribute("target", "_blank");
     await expect(linkedin).toHaveAttribute("rel", /noopener/);
     await expect(linkedin).toHaveAttribute("href", /linkedin\.com/);
+  });
+
+  test("os quatro canais oficiais estão no cabeçalho, com o convite certo", async ({ page, isMobile }) => {
+    test.skip(isMobile, "No celular os ícones ficam dentro do menu recolhido.");
+
+    // Convites e perfil oficiais — se algum voltar a ser um link genérico
+    // (discord.gg sem código, por exemplo), este teste acusa.
+    const esperado = {
+      discord: /discord\.gg\/7aA3C2MxzD/,
+      whatsapp: /chat\.whatsapp\.com\/I5iW4tCcwcj5Ng1OxRsgPr/,
+      linkedin: /linkedin\.com\/company\/guardioesqa/,
+      github: /github\.com\/guardioesdaqualidadedev/,
+    };
+
+    for (const [rede, padrao] of Object.entries(esperado)) {
+      const icone = page.getByTestId(`social-${rede}`).first();
+      await expect(icone, `ícone de ${rede}`).toBeVisible();
+      await expect(icone, `link de ${rede}`).toHaveAttribute("href", padrao);
+      await expect(icone).toHaveAttribute("target", "_blank");
+    }
+  });
+
+  test("o rodapé repete os canais, incluindo o GitHub", async ({ page }) => {
+    const rodape = page.getByTestId("site-footer");
+    await expect(rodape.getByRole("link", { name: "Código no GitHub" })).toHaveAttribute(
+      "href",
+      /github\.com\/guardioesdaqualidadedev/
+    );
+    await expect(rodape.getByRole("link", { name: "Servidor no Discord" })).toHaveAttribute(
+      "href",
+      /discord\.gg\/7aA3C2MxzD/
+    );
+    await expect(rodape.getByRole("link", { name: "Comunidade no WhatsApp" })).toHaveAttribute(
+      "href",
+      /chat\.whatsapp\.com\/I5iW4tCcwcj5Ng1OxRsgPr/
+    );
   });
 });
 
@@ -170,5 +229,144 @@ test.describe("Navegação pelo menu", () => {
       });
       expect(estouram, `elementos estourando em ${rota}`).toEqual([]);
     }
+  });
+
+  test("o cabeçalho não estoura nas larguras entre celular e desktop", async ({ page, isMobile }) => {
+    test.skip(isMobile, "Aqui a viewport é controlada pelo próprio teste.");
+    await page.goto("/");
+
+    // A suíte mede em 1280px e em 390px. A faixa do meio — tablet em pé e
+    // janela reduzida — não era coberta por ninguém, e foi exatamente onde o
+    // cabeçalho passava a rolar de lado.
+    for (const largura of [821, 860, 899, 900, 1024]) {
+      await page.setViewportSize({ width: largura, height: 800 });
+      const estoura = await page.evaluate(() => {
+        const limite = document.documentElement.clientWidth + 1;
+        const cabecalho = document.querySelector('[data-testid="site-header"]');
+        return [...cabecalho.querySelectorAll("*")]
+          .filter((el) => !el.ownerSVGElement && el.getBoundingClientRect().right > limite)
+          .map((el) => el.tagName.toLowerCase() + "." + (el.getAttribute("class") || "(sem classe)"))
+          .slice(0, 3);
+      });
+      expect(estoura, `cabeçalho estourando em ${largura}px`).toEqual([]);
+    }
+  });
+});
+
+// ─── Parceiros ───────────────────────────────────────────────────────────
+test.describe("Seção de parceiros", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+  });
+
+  test("fica logo acima do rodapé", async ({ page }) => {
+    const secao = page.getByTestId("secao-parceiros");
+    await expect(secao).toBeVisible();
+
+    // Nada além do rodapé pode vir depois dela na ordem do documento.
+    const ehUltima = await page.evaluate(() => {
+      const parceiros = document.querySelector('[data-testid="secao-parceiros"]');
+      const rodape = document.querySelector('[data-testid="site-footer"]');
+      // Node.DOCUMENT_POSITION_FOLLOWING = 4 → o rodapé vem depois dos parceiros.
+      return Boolean(parceiros.compareDocumentPosition(rodape) & 4);
+    });
+    expect(ehUltima).toBe(true);
+  });
+
+  test("é um carrossel e mostra o Projeto Social Garapuvu", async ({ page }) => {
+    const carrossel = page.getByTestId("carrossel-parceiros");
+    await expect(carrossel).toHaveAttribute("aria-roledescription", "carrossel");
+    await expect(page.getByTestId("parceiro-garapuvu")).toBeVisible();
+    await expect(page.getByTestId("parceiro-garapuvu")).toContainText("Projeto Social Garapuvu");
+  });
+
+  test("com um parceiro só, não há setas nem indicadores", async ({ page }) => {
+    // Seta desabilitada é alvo morto: com um item, os controles não existem.
+    await expect(page.getByTestId("parceiros-controles")).toHaveCount(0);
+    await expect(page.getByTestId("parceiros-lista").locator("> li")).toHaveCount(1);
+  });
+
+  test("os links do parceiro abrem fora e apontam para site e YouTube", async ({ page }) => {
+    const site = page.getByTestId("parceiro-garapuvu-site");
+    const youtube = page.getByTestId("parceiro-garapuvu-youtube");
+
+    for (const link of [site, youtube]) {
+      await expect(link).toBeVisible();
+      await expect(link).toHaveAttribute("target", "_blank");
+      await expect(link).toHaveAttribute("rel", /noopener/);
+    }
+    await expect(youtube).toHaveAttribute("href", /youtube\.com\/channel\/UCST9VOQUtVUC2A2enxcJsQQ/);
+    // O site do parceiro tem de sair do nosso domínio: já apontou por engano
+    // para a landing da própria comunidade.
+    await expect(site).toHaveAttribute("href", /projeto-garapuvu\.web\.app/);
+  });
+});
+
+// ─── Contador de visitas ─────────────────────────────────────────────────
+test.describe("Contador de visitas", () => {
+  test("quando aparece, está no rodapé e não no cabeçalho", async ({ page }) => {
+    await page.goto("/");
+
+    const contador = page.getByTestId("visitor-count");
+    // Sem `.env` de Firebase o contador não renderiza — e isso é esperado.
+    // O que NUNCA pode acontecer é ele voltar para o topo.
+    await expect(page.getByTestId("site-header").getByTestId("visitor-count")).toHaveCount(0);
+
+    if ((await contador.count()) > 0) {
+      await expect(page.getByTestId("site-footer").getByTestId("visitor-count")).toBeVisible();
+      await expect(contador).toContainText(/visitas?/);
+    }
+  });
+});
+
+// ─── Arte que acompanha o tema ───────────────────────────────────────────
+test.describe("Logo e banner por tema", () => {
+  test("o símbolo da marca troca de versão junto com o tema", async ({ page }) => {
+    await page.goto("/");
+
+    const simbolo = page.getByTestId("brand-simbolo").first();
+    await expect(simbolo).toHaveAttribute("data-variante", "escuro");
+    const arteEscura = await simbolo.getAttribute("src");
+
+    await page.getByTestId("theme-toggle").click();
+    await expect(simbolo).toHaveAttribute("data-variante", "claro");
+    const arteClara = await simbolo.getAttribute("src");
+
+    // O ponto do pedido: hoje o logo era o MESMO arquivo nos dois temas.
+    expect(arteClara).not.toBe(arteEscura);
+  });
+
+  test("o banner da marca troca de versão junto com o tema", async ({ page }) => {
+    await page.goto("/");
+
+    const banner = page.getByTestId("banner-marca");
+    await banner.scrollIntoViewIfNeeded();
+    await expect(banner).toHaveAttribute("data-variante", "escuro");
+    const arteEscura = await banner.locator("img").getAttribute("src");
+
+    await page.getByTestId("theme-toggle").click();
+    await expect(banner).toHaveAttribute("data-variante", "claro");
+    expect(await banner.locator("img").getAttribute("src")).not.toBe(arteEscura);
+  });
+});
+
+test.describe("Landing — syllabus CTFL", () => {
+  test("divulga os seis capítulos e o PDF oficial", async ({ page }) => {
+    await page.goto("/");
+
+    const secao = page.getByTestId("syllabus");
+    await expect(secao).toBeVisible();
+    await expect(page.getByTestId("syllabus-capitulos").locator("> li")).toHaveCount(6);
+    await expect(page.getByTestId("syllabus-exame")).toContainText("40");
+
+    // O botão principal aponta para o PDF em português, e abre em outra aba.
+    const pdf = page.getByTestId("syllabus-pdf");
+    await expect(pdf).toHaveAttribute("href", /\.pdf$/);
+    await expect(pdf).toHaveAttribute("target", "_blank");
+  });
+
+  test("repete o syllabus no rodapé", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByTestId("footer-syllabus-pdf")).toHaveAttribute("href", /\.pdf$/);
   });
 });

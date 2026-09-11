@@ -1,14 +1,24 @@
 import React from "react";
-import simbolo from "../assets/marca-simbolo.png";
+import simboloClaro from "../assets/marca-simbolo-claro.png";
+import simboloEscuro from "../assets/marca-simbolo-escuro.png";
+import { useTema, porTema } from "../hooks/useTema.js";
 import { COLORS } from "../theme.js";
 
 // Assinatura da marca no cabeçalho e no rodapé.
 //
-// O símbolo (escudo em avatar) é um PNG do manual de marca — funciona nos dois
-// temas porque já vem sobre o azul-marinho. O nome é composto em tipografia
-// condensada, seguindo o manual: "Sans-serif condensada em negrito" no nome e
-// "sans-serif limpa" na assinatura de apoio.
+// O símbolo (escudo em avatar) troca com o tema — é a diferença entre as duas
+// aplicações do manual de marca:
+//   • tema claro  → disco branco com a marca em azul-marinho (aplicação positiva)
+//   • tema escuro → disco azul-marinho com a marca em branco (aplicação negativa)
+//
+// Cor não se resolve em PNG por CSS, então a escolha é feita em JS a partir do
+// contexto de tema. O nome ao lado é composto em tipografia condensada,
+// seguindo o manual: "sans-serif condensada em negrito" no nome e "sans-serif
+// limpa" na assinatura de apoio.
 export default function BrandMark({ tamanho = 40, mostrarTexto = true, cor, sobreFaixa = false }) {
+  const tema = useTema();
+  const simbolo = porTema(tema, { claro: simboloClaro, escuro: simboloEscuro });
+
   const corTitulo = cor || (sobreFaixa ? COLORS.onBand : COLORS.text);
   const corApoio = sobreFaixa ? COLORS.onBandMuted : COLORS.muted;
 
@@ -19,6 +29,8 @@ export default function BrandMark({ tamanho = 40, mostrarTexto = true, cor, sobr
         alt="Símbolo da comunidade QA's Guardiões do Software"
         width={tamanho}
         height={tamanho}
+        data-testid="brand-simbolo"
+        data-variante={tema === "light" ? "claro" : "escuro"}
         style={{
           borderRadius: "50%",
           display: "block",

@@ -13,6 +13,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "deploy": "npm run build && firebase deploy --only hosting",
+    "certificado": "node scripts/gerar-certificado.mjs",
     "test:all": "PW_DEMO=1 PW_RITMO=2.4 playwright test --workers=1 --headed",
     "test:e2e:headed": "playwright test --headed"
   },

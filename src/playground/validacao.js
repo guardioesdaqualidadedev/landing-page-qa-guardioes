@@ -10,6 +10,7 @@
 // equivalência: quem estiver praticando tem fronteiras claras para explorar.
 // ─────────────────────────────────────────────────────────────────────────────
 import { SEVERIDADES, PRIORIDADES, AMBIENTES, MODULOS } from "./dominio.js";
+import { isoParaData, formatarDataBR, formatarDataObjBR, FORMATO_DATA_BR } from "../utils/datas.js";
 
 export const LIMITES = {
   tituloMin: 5,
@@ -24,15 +25,11 @@ export const LIMITES = {
 // Formato de e-mail deliberadamente simples: algo@algo.dominio, sem espaços.
 const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 
-// "2026-09-09" → data local à meia-noite. Usar new Date("2026-09-09") direto
-// interpreta como UTC e, em fusos negativos como o do Brasil, a data "hoje"
-// vira "ontem" — um clássico de bug de fuso horário.
-export function paraDataLocal(iso) {
-  if (typeof iso !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
-  const [a, m, d] = iso.split("-").map(Number);
-  const data = new Date(a, m - 1, d);
-  return Number.isNaN(data.getTime()) ? null : data;
-}
+// Reexportado para não quebrar quem já importava daqui. A implementação mora em
+// `utils/datas.js` porque a regra de fuso (montar a data local peça por peça,
+// em vez de deixar `new Date("2026-09-09")` interpretar como UTC e voltar um
+// dia no Brasil) vale para o site inteiro, não só para o playground.
+export const paraDataLocal = isoParaData;
 
 export function validarDefeito(valores, hoje = new Date()) {
   const erros = {};
@@ -71,12 +68,15 @@ export function validarDefeito(valores, hoje = new Date()) {
   if (!v.data) {
     erros.data = "Informe a data de detecção.";
   } else if (!data) {
-    erros.data = "Data inválida.";
+    erros.data = `Data inválida. Use o formato ${FORMATO_DATA_BR}.`;
   } else {
     const limiteHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
-    if (data > limiteHoje) erros.data = "A data de detecção não pode estar no futuro.";
-    else if (data < paraDataLocal(LIMITES.dataMinima)) {
-      erros.data = `A data não pode ser anterior a ${LIMITES.dataMinima}.`;
+    if (data > limiteHoje) {
+      erros.data = `A data de detecção não pode estar no futuro (hoje é ${formatarDataObjBR(limiteHoje)}).`;
+    } else if (data < paraDataLocal(LIMITES.dataMinima)) {
+      // O limite é guardado em ISO (é o formato que o <input type="date" usa),
+      // mas o visitante lê dd/mm/aaaa — nunca "2020-01-01".
+      erros.data = `A data não pode ser anterior a ${formatarDataBR(LIMITES.dataMinima)}.`;
     }
   }
 

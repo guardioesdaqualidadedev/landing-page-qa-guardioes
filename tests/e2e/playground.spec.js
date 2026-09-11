@@ -33,10 +33,10 @@ test.describe("Menu Playground — abertura", () => {
     await page.goto("/playground");
   });
 
-  test("abre pela URL direta com as três abas", async ({ page }) => {
+  test("abre pela URL direta com as quatro abas", async ({ page }) => {
     await expect(page.getByTestId("pagina-playground")).toBeVisible();
     await expect(page.getByTestId("titulo-playground")).toContainText("Playground");
-    await expect(page.getByTestId("abas-playground").getByRole("tab")).toHaveCount(3);
+    await expect(page.getByTestId("abas-playground").getByRole("tab")).toHaveCount(4);
   });
 
   test("abre na aba de registro por padrão", async ({ page }) => {
@@ -279,5 +279,63 @@ test.describe("Playground — cenários de teste", () => {
 
     await page.getByTestId("cenario-c1").uncheck();
     await expect(page.getByTestId("progresso-cenarios")).toContainText("1 de 12");
+  });
+});
+
+test.describe("Playground — trilha do certificado", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/playground");
+    await page.getByTestId("aba-certificado").click();
+  });
+
+  test("mostra a trilha das sete etapas já aberta", async ({ page }) => {
+    await expect(page.getByTestId("area-certificacao")).toBeVisible();
+    // O primeiro bloco abre por padrão: é o caminho que a pessoa precisa ver.
+    await expect(page.getByTestId("lista-etapas").locator("> li")).toHaveCount(7);
+  });
+
+  test("explica as três abas e o botão de restaurar", async ({ page }) => {
+    await page.getByTestId("resumo-bloco-abas").click();
+
+    for (const id of ["registrar", "tabela", "cenarios"]) {
+      await expect(page.getByTestId(`aba-explicada-${id}`)).toBeVisible();
+    }
+    await expect(page.getByTestId("explicacao-restaurar")).toContainText("Restaurar massa de dados");
+  });
+
+  test("entrega o modelo de documento no padrão de caso de teste", async ({ page }) => {
+    await page.getByTestId("resumo-bloco-documento").click();
+
+    const modelo = page.getByTestId("modelo-documento");
+    await expect(modelo).toContainText("CT-01");
+    await expect(modelo).toContainText("Resultado esperado");
+    await expect(modelo).toContainText("Resultado real");
+    await expect(modelo).toContainText("Evidência");
+  });
+
+  test("copia o modelo para a área de transferência", async ({ page, browserName, context }) => {
+    test.skip(browserName !== "chromium", "A permissão de clipboard só é concedível no Chromium.");
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+
+    await page.getByTestId("resumo-bloco-documento").click();
+    await page.getByTestId("copiar-modelo-documento").click();
+
+    await expect(page.getByTestId("copiar-modelo-documento")).toContainText("Copiado");
+    const area = await page.evaluate(() => navigator.clipboard.readText());
+    expect(area).toContain("RELATÓRIO DE TESTES");
+  });
+
+  test("orienta a entrega no Drive e aponta os canais de envio", async ({ page }) => {
+    await page.getByTestId("resumo-bloco-entrega").click();
+
+    await expect(page.getByTestId("estrutura-drive")).toContainText("evidencias/");
+    await expect(page.getByTestId("passos-compartilhamento").locator("li")).toHaveCount(7);
+    await expect(page.getByTestId("enviar-discord")).toBeVisible();
+    await expect(page.getByTestId("enviar-whatsapp")).toBeVisible();
+  });
+
+  test("liga a trilha ao syllabus oficial", async ({ page }) => {
+    await page.getByTestId("resumo-bloco-syllabus").click();
+    await expect(page.getByTestId("syllabus-pdf-playground")).toHaveAttribute("href", /\.pdf$/);
   });
 });

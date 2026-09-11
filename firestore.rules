@@ -3,13 +3,29 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Contador total de visitantes da comunidade (documento único `stats/visits`).
+    //
     //  • leitura liberada — qualquer visitante pode ver o total;
-    //  • escrita só aceita documentos com EXCLUSIVAMENTE o campo numérico `count`,
-    //    evitando que alguém grave lixo na coleção.
+    //  • escrita aceita EXCLUSIVAMENTE o campo `count`, e só para somar 1.
+    //
+    // A restrição do "+1" é o que impede alguém de abrir o console do navegador
+    // e gravar `{ count: 999999 }`. A regra anterior validava só o tipo, então
+    // qualquer número passava. Como `increment(1)` é resolvido antes da regra
+    // ser avaliada, `request.resource.data.count` já chega com o valor final.
     match /stats/{docId} {
       allow read: if true;
-      allow create, update: if request.resource.data.keys().hasOnly(['count'])
-                            && request.resource.data.count is int;
+
+      allow create: if request.resource.data.keys().hasOnly(['count'])
+                    && request.resource.data.count is int
+                    && request.resource.data.count == 1;
+
+      allow update: if request.resource.data.keys().hasOnly(['count'])
+                    && request.resource.data.count is int
+                    && request.resource.data.count == resource.data.count + 1;
+
+      // Zerar o contador é operação administrativa: faça pelo console do
+      // Firebase (Firestore > stats/visits), que roda com privilégio de admin
+      // e não passa por estas regras.
+      allow delete: if false;
     }
 
     // Tudo o que não for `stats` fica negado por padrão (seguro).

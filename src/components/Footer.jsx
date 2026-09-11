@@ -3,6 +3,46 @@ import { Link } from "react-router-dom";
 import BrandMark from "./BrandMark.jsx";
 import { COLORS } from "../theme.js";
 import { LINKS } from "../content/comunidade.js";
+import { SYLLABUS } from "../content/syllabus.js";
+import useVisitorCount from "../hooks/useVisitorCount.js";
+
+// Contador total de visitantes. Vive no rodapé porque o número só interessa a
+// quem chegou ao fim da página — e aqui cabe por extenso, sem disputar espaço
+// com o menu. Fica invisível enquanto o Firebase não responde (ou quando o site
+// roda sem `.env`): melhor não mostrar nada do que mostrar zero.
+function ContadorVisitas() {
+  const total = useVisitorCount();
+  // Esconde enquanto o Firebase não responde e também no zero — "0 visitas
+  // desde o lançamento" diz menos do que não dizer nada.
+  if (total === null || total === 0) return null;
+
+  return (
+    <p
+      data-testid="visitor-count"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 9,
+        margin: "22px 0 0",
+        padding: "8px 14px",
+        borderRadius: 999,
+        background: "rgba(255,255,255,.06)",
+        border: "1px solid rgba(255,255,255,.10)",
+        fontSize: 13,
+        color: COLORS.onBandBody,
+      }}
+    >
+      <span
+        aria-hidden="true"
+        style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS.accent, flexShrink: 0 }}
+      />
+      <span>
+        <strong style={{ color: COLORS.onBand, fontWeight: 700 }}>{total.toLocaleString("pt-BR")}</strong>{" "}
+        {total === 1 ? "visita" : "visitas"} desde o lançamento
+      </span>
+    </p>
+  );
+}
 
 export default function Footer() {
   const ano = new Date().getFullYear();
@@ -18,7 +58,7 @@ export default function Footer() {
   return (
     <footer data-testid="site-footer" style={{ background: COLORS.band, color: COLORS.onBand, marginTop: 90 }}>
       <div className="qa-wrap" style={{ paddingTop: 54, paddingBottom: 34 }}>
-        <div className="qa-footer-grid" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr", gap: 40 }}>
+        <div className="qa-footer-grid" style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1.1fr", gap: 36 }}>
           <div>
             <BrandMark tamanho={48} sobreFaixa />
             <p style={{ color: COLORS.onBandBody, fontSize: 14.5, lineHeight: 1.65, maxWidth: 360, marginTop: 18 }}>
@@ -38,6 +78,7 @@ export default function Footer() {
             >
               Mais qualidade. Mais conquistas.
             </p>
+            <ContadorVisitas />
           </div>
 
           <div>
@@ -47,6 +88,7 @@ export default function Footer() {
             <Link to="/" style={link}>A comunidade</Link>
             <Link to="/manifesto" style={link}>Manifesto Ágil de Testes</Link>
             <Link to="/playground" style={link}>Playground QA</Link>
+            <Link to="/#parceiros" style={link}>Parceiros</Link>
           </div>
 
           <div>
@@ -56,6 +98,34 @@ export default function Footer() {
             <a href={LINKS.discord} target="_blank" rel="noopener noreferrer" style={link}>Servidor no Discord</a>
             <a href={LINKS.whatsapp} target="_blank" rel="noopener noreferrer" style={link}>Comunidade no WhatsApp</a>
             <a href={LINKS.linkedin} target="_blank" rel="noopener noreferrer" style={link}>Página no LinkedIn</a>
+            <a href={LINKS.github} target="_blank" rel="noopener noreferrer" style={link}>Código no GitHub</a>
+          </div>
+
+          <div>
+            <h3 className="qa-eyebrow" style={{ color: COLORS.onBandMuted, marginBottom: 10 }}>
+              Estudar
+            </h3>
+            <a
+              href={SYLLABUS.links.pdfPt}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={link}
+              data-testid="footer-syllabus-pdf"
+            >
+              Syllabus CTFL {SYLLABUS.versao} em PDF
+            </a>
+            <a href={SYLLABUS.links.oficial} target="_blank" rel="noopener noreferrer" style={link}>
+              Certificação no ISTQB
+            </a>
+            <a href={SYLLABUS.links.bstqb} target="_blank" rel="noopener noreferrer" style={link}>
+              BSTQB — board brasileiro
+            </a>
+            <Link to="/playground#certificado" style={link}>
+              Certificado do playground
+            </Link>
+            <p style={{ fontSize: 12, color: COLORS.onBandMuted, margin: "10px 0 0", lineHeight: 1.55 }}>
+              O programa oficial do exame, gratuito e em português.
+            </p>
           </div>
         </div>
 

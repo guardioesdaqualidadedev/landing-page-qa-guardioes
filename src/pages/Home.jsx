@@ -2,7 +2,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 import Reveal from "../components/Reveal.jsx";
 import SectionHeader from "../components/Section.jsx";
+import { SYLLABUS } from "../content/syllabus.js";
 import OrbitBackground from "../components/OrbitBackground.jsx";
+import Banner from "../components/Banner.jsx";
+import Parceiros from "../components/Parceiros.jsx";
+import { IconeSocial } from "../components/Icones.jsx";
 import { COLORS } from "../theme.js";
 import { track } from "../firebase.js";
 import {
@@ -383,6 +387,11 @@ function Regras() {
   );
 }
 
+// "Patrícia" → "patricia". Um data-testid com acento é um convite a erro de
+// digitação no teste — e a acento perdido em terminal e log de CI.
+const semAcento = (texto) =>
+  texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
 // ─── Governança e métricas ───────────────────────────────────────────────
 function Governanca() {
   return (
@@ -392,12 +401,24 @@ function Governanca() {
         titulo="Quem cuida de quê"
         apoio="Comunidade sem dono por canal tem dois destinos: alguém faz tudo até cansar, ou ninguém faz nada achando que outro está fazendo."
       />
-      <div className="qa-grid3" style={{ marginBottom: 34 }} data-testid="admins">
+      <div className="qa-grid-admins" style={{ marginBottom: 34 }} data-testid="admins">
         {ADMINS.map((a, i) => (
           <Reveal key={a.nome} delay={i * 0.05} className="qa-card" style={{ padding: "22px 22px 20px" }}>
-            <h3 className="qa-display" style={{ fontSize: 25, fontWeight: 700, margin: 0, color: COLORS.text }}>
-              {a.nome}
-            </h3>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+              <h3 className="qa-display" style={{ fontSize: 25, fontWeight: 700, margin: 0, color: COLORS.text }}>
+                {a.nome}
+              </h3>
+              {/* O rótulo nomeia a pessoa: três ícones iguais de LinkedIn na
+                  mesma seção só se distinguem pelo nome de quem levam a ver. */}
+              <IconeSocial
+                tipo="linkedin"
+                href={a.linkedin}
+                rotulo={`LinkedIn de ${a.nome}`}
+                evento="admin_linkedin"
+                tamanho={32}
+                testid={`admin-linkedin-${semAcento(a.nome)}`}
+              />
+            </div>
             <p style={{ fontSize: 12.5, color: COLORS.accentText, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", margin: "4px 0 12px" }}>
               {a.onde}
             </p>
@@ -437,6 +458,115 @@ function Governanca() {
               <p style={{ margin: "3px 0 0", fontSize: 13.5, color: COLORS.muted, lineHeight: 1.5 }}>{m.porque}</p>
             </div>
           ))}
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
+// ─── Syllabus CTFL ───────────────────────────────────────────────────────
+// A comunidade recomenda estudar pelo documento oficial, e ele é gratuito.
+// Esta seção existe para tirar a desculpa de "não sei por onde começar".
+function Syllabus() {
+  return (
+    <section className="qa-wrap qa-section" id="syllabus">
+      <SectionHeader
+        eyebrow={`Estudo · ${SYLLABUS.sigla} ${SYLLABUS.versao}`}
+        titulo="O programa oficial de quem testa software"
+        apoio={SYLLABUS.resumo}
+      />
+
+      <Reveal className="qa-card" style={{ padding: "28px 28px 24px" }} data-testid="syllabus">
+        <div className="qa-grid4" style={{ marginBottom: 28 }} data-testid="syllabus-exame">
+          {SYLLABUS.exame.map((e) => (
+            <div key={e.rotulo} style={{ paddingRight: 14 }}>
+              <p className="qa-eyebrow" style={{ color: COLORS.muted, margin: 0, fontSize: 10.5 }}>
+                {e.rotulo}
+              </p>
+              <p
+                className="qa-display"
+                style={{ fontSize: 26, fontWeight: 700, color: COLORS.accentText, margin: "6px 0 2px" }}
+              >
+                {e.valor}
+              </p>
+              <p style={{ fontSize: 12.5, color: COLORS.muted, margin: 0, lineHeight: 1.5 }}>{e.detalhe}</p>
+            </div>
+          ))}
+        </div>
+
+        <h3 style={{ fontSize: 17, fontWeight: 700, color: COLORS.text, margin: "0 0 16px" }}>
+          Os seis capítulos da versão {SYLLABUS.versao}
+        </h3>
+        <ol
+          className="qa-grid2"
+          style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 14 }}
+          data-testid="syllabus-capitulos"
+        >
+          {SYLLABUS.capitulos.map((c) => (
+            <li key={c.n} style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 13, alignItems: "start" }}>
+              <span
+                aria-hidden="true"
+                className="qa-display"
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: COLORS.accentText,
+                  background: COLORS.accentSoft,
+                  borderRadius: 8,
+                  padding: "5px 10px",
+                  minWidth: 30,
+                  textAlign: "center",
+                }}
+              >
+                {c.n}
+              </span>
+              <div>
+                <p style={{ fontSize: 15, fontWeight: 700, color: COLORS.text, margin: "2px 0 3px", lineHeight: 1.35 }}>
+                  {c.titulo}
+                </p>
+                <p style={{ fontSize: 13.5, color: COLORS.textSoft, margin: 0, lineHeight: 1.6 }}>{c.descricao}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+
+        <div
+          style={{
+            marginTop: 26,
+            paddingTop: 22,
+            borderTop: `1px solid ${COLORS.border}`,
+            display: "flex",
+            gap: 12,
+            flexWrap: "wrap",
+            alignItems: "center",
+          }}
+        >
+          <a
+            className="qa-btn qa-btn-primario"
+            href={SYLLABUS.links.pdfPt}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="syllabus-pdf"
+            onClick={() => track("syllabus_download", { origem: "home" })}
+          >
+            Baixar o PDF em português
+          </a>
+          <a
+            className="qa-btn"
+            href={SYLLABUS.links.oficial}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ background: COLORS.surfaceAlt, color: COLORS.text, boxShadow: `inset 0 0 0 1px ${COLORS.border}` }}
+          >
+            Página oficial do ISTQB
+          </a>
+          <p style={{ fontSize: 12.5, color: COLORS.muted, margin: 0, lineHeight: 1.55, flex: "1 1 260px" }}>
+            Tradução do {SYLLABUS.boardBr}. Quer aplicar na prática o capítulo 4?{" "}
+            <Link to="/playground" style={{ color: COLORS.accentText, fontWeight: 600 }}>
+              É o que o playground treina
+            </Link>
+            .
+          </p>
         </div>
       </Reveal>
     </section>
@@ -496,13 +626,17 @@ export default function Home() {
       <Hero />
       <Numeros />
       <Missao />
+      <Banner />
       <Objetivos />
       <Canais />
       <Roteamento />
       <Perfis />
       <Regras />
       <Governanca />
+      <Syllabus />
       <Chamada />
+      {/* Última seção da página: logo acima do rodapé. */}
+      <Parceiros />
     </div>
   );
 }

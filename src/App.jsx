@@ -7,15 +7,31 @@ import Manifesto from "./pages/Manifesto.jsx";
 import Playground from "./pages/Playground.jsx";
 import NaoEncontrada from "./pages/NaoEncontrada.jsx";
 import { COLORS, THEME_CSS, temaInicial, aplicarTema, proximoTema } from "./theme.js";
+import { TemaContexto } from "./hooks/useTema.js";
 import { track } from "./firebase.js";
 
 // Sobe a página a cada troca de rota. Sem isto, quem clica em "Playground"
 // estando no meio da landing chega na tela nova já rolado.
+//
+// Quando a rota traz âncora (#parceiros, vindo do rodapé), rolamos até a seção
+// em vez do topo. O React Router não faz isso sozinho: ele troca a URL sem
+// recarregar, e o pulo nativo do navegador para a âncora só acontece no
+// carregamento inicial.
 function ScrollTopo() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
+
   useEffect(() => {
+    if (hash) {
+      // O alvo pode ainda não estar montado no mesmo tick da troca de rota.
+      const alvo = document.querySelector(hash);
+      if (alvo) {
+        alvo.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+    }
     window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
-  }, [pathname]);
+  }, [pathname, hash]);
+
   return null;
 }
 
@@ -120,12 +136,31 @@ const GLOBAL_CSS = `
   .qa-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
   .qa-grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 
+  /* Administração: a quantidade de pessoas muda com o tempo, então a grade se
+     ajusta sozinha em vez de ficar presa a três colunas — com quatro cartões,
+     três colunas deixariam um órfão sozinho na segunda linha. */
+  .qa-grid-admins {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(238px, 1fr));
+    gap: 18px;
+  }
+
   .qa-sr-only {
     position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
     overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
   }
 
   .qa-nav-mobile { display: none !important; }
+
+  /* Carrossel de parceiros. O botão do parceiro é discreto (fundo de
+     superfície, não laranja), então o hover acende a borda em vez de repetir a
+     sombra laranja de .qa-btn. */
+  .qa-parceiro-link:hover {
+    transform: translateY(-2px);
+    border-color: ${COLORS.accent} !important;
+    color: ${COLORS.accentText} !important;
+    box-shadow: 0 10px 22px rgba(0,0,0,.18);
+  }
 
   a:focus-visible, button:focus-visible, input:focus-visible,
   select:focus-visible, textarea:focus-visible {
@@ -147,8 +182,13 @@ const GLOBAL_CSS = `
     .qa-footer-grid { grid-template-columns: 1fr 1fr !important; }
   }
 
-  /* ── Celular ───────────────────────────────────────────────────────── */
-  @media (max-width: 820px) {
+  /* ── Celular e tablet estreito ─────────────────────────────────────────
+     O cabeçalho aberto é marca + três itens de menu + quatro ícones de rede +
+     botão de tema. Isso deixa de caber por volta de 880px: até 899px o menu
+     recolhido assume. O limite era 820px e a faixa entre 821 e 880 rolava de
+     lado — defeito antigo, que só não aparecia nos testes porque eles medem em
+     1280px e em 390px, nunca no meio. */
+  @media (max-width: 899px) {
     .qa-nav-desktop { display: none !important; }
     .qa-nav-mobile { display: inline-flex !important; }
     nav.qa-nav-mobile { display: block !important; }
@@ -272,20 +312,22 @@ export default function App() {
   };
 
   return (
-    <div style={{ background: COLORS.page, color: COLORS.text, minHeight: "100vh", fontFamily: "'Inter', system-ui, sans-serif" }}>
-      <style>{GLOBAL_CSS}</style>
-      <a className="qa-skip" href="#conteudo">Pular para o conteúdo</a>
-      <ScrollTopo />
-      <Header theme={theme} onToggleTheme={alternarTema} />
-      <main id="conteudo">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/manifesto" element={<Manifesto />} />
-          <Route path="/playground" element={<Playground />} />
-          <Route path="*" element={<NaoEncontrada />} />
-        </Routes>
-      </main>
-      <Footer />
-    </div>
+    <TemaContexto.Provider value={theme}>
+      <div style={{ background: COLORS.page, color: COLORS.text, minHeight: "100vh", fontFamily: "'Inter', system-ui, sans-serif" }}>
+        <style>{GLOBAL_CSS}</style>
+        <a className="qa-skip" href="#conteudo">Pular para o conteúdo</a>
+        <ScrollTopo />
+        <Header theme={theme} onToggleTheme={alternarTema} />
+        <main id="conteudo">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/manifesto" element={<Manifesto />} />
+            <Route path="/playground" element={<Playground />} />
+            <Route path="*" element={<NaoEncontrada />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
+    </TemaContexto.Provider>
   );
 }

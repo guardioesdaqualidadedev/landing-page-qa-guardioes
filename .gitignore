@@ -39,3 +39,6 @@ blob-report/
 
 # Artefatos do Playwright MCP
 .playwright-mcp/
+
+# Certificados emitidos — contêm nome de aluno; ficam só na máquina de quem emite
+certificados/

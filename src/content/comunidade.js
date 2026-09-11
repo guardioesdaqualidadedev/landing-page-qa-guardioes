@@ -7,8 +7,10 @@
 
 export const LINKS = {
   linkedin: "https://www.linkedin.com/company/guardioesqa/",
-  discord: "https://discord.gg/",
-  whatsapp: "https://chat.whatsapp.com/",
+  discord: "https://discord.gg/7aA3C2MxzD",
+  // Conta que hospeda o código aberto da comunidade — inclusive o deste site.
+  github: "https://github.com/guardioesdaqualidadedev",
+  whatsapp: "https://chat.whatsapp.com/I5iW4tCcwcj5Ng1OxRsgPr",
   manifestoOriginal: "https://agilemanifesto.org/iso/ptbr/manifesto.html",
 };
 
@@ -160,18 +162,53 @@ export const ADMINS = [
     onde: "Discord",
     papeis: ["Administração do Discord", "Conteúdo", "Instrutor"],
     escopo: "Estrutura, permissões e moderação dos canais; conteúdo técnico em #automações e #novidades-de-qa",
+    linkedin: "https://www.linkedin.com/in/douglas-adriano-queiroz-ctfl-680b1978/",
   },
   {
     nome: "Camila",
     onde: "WhatsApp e LinkedIn",
     papeis: ["Administração do WhatsApp", "Presença digital", "Conteúdo"],
     escopo: "Grupos do WhatsApp e grupo Avisos; presença pública e calendário de publicação no LinkedIn",
+    linkedin: "https://www.linkedin.com/in/camila-lopes-ferreira-carvalho43235429/",
   },
   {
     nome: "Amanda",
+    onde: "WhatsApp e Design",
+    papeis: ["Liderança de Design", "Administração do WhatsApp"],
+    escopo:
+      "Direção visual da comunidade — identidade, peças de divulgação e consistência da marca em todos os canais; moderação dos grupos do WhatsApp",
+    linkedin: "https://www.linkedin.com/in/amanda-marino-28b34a324/",
+  },
+  {
+    nome: "Patrícia",
     onde: "WhatsApp",
-    papeis: ["Administração do WhatsApp", "Pessoas e ingresso", "Instrutora"],
-    escopo: "Grupos do WhatsApp; entrevista e avaliação de candidatos a moderador; conteúdo e formação",
+    papeis: ["Administração do WhatsApp"],
+    escopo: "Grupos do WhatsApp: acolhimento de quem entra, moderação do dia a dia e roteamento das conversas para o canal certo",
+    linkedin: "https://www.linkedin.com/in/patricia-silva-correa/",
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Parceiros — iniciativas que caminham junto com a comunidade.
+//
+// A vitrine é um carrossel desde o primeiro parceiro: entra o segundo e não há
+// layout para refazer, só um item nesta lista.
+// ─────────────────────────────────────────────────────────────────────────────
+export const PARCEIROS = [
+  {
+    id: "garapuvu",
+    nome: "Projeto Social Garapuvu",
+    chamada: "Formação gratuita em tecnologia e qualidade de software",
+    descricao:
+      "Projeto social que abre a porta da tecnologia para quem não teria como pagar por ela: aulas gratuitas, material aberto e acompanhamento de quem está dando os primeiros passos em desenvolvimento e em QA.",
+    links: [
+      { tipo: "site", rotulo: "Site do projeto", href: "https://projeto-garapuvu.web.app/" },
+      {
+        tipo: "youtube",
+        rotulo: "Canal no YouTube",
+        href: "https://www.youtube.com/channel/UCST9VOQUtVUC2A2enxcJsQQ",
+      },
+    ],
   },
 ];
 

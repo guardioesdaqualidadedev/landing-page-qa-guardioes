@@ -3,6 +3,7 @@ import Campo from "./Campo.jsx";
 import { COLORS } from "../theme.js";
 import { SEVERIDADES, PRIORIDADES, AMBIENTES, MODULOS } from "./dominio.js";
 import { validarDefeito, LIMITES } from "./validacao.js";
+import { formatarDataBR, formatarDataObjBR, FORMATO_DATA_BR } from "../utils/datas.js";
 
 export const VALORES_INICIAIS = {
   titulo: "",
@@ -16,6 +17,17 @@ export const VALORES_INICIAIS = {
   passos: "",
   aceite: false,
 };
+
+// Hoje em ISO (aaaa-mm-dd), que é o único formato aceito nos atributos `min` e
+// `max` do <input type="date"> — independente do que ele MOSTRA na tela.
+// Montado a partir da data local para não cair no fuso UTC do `toISOString()`,
+// que no Brasil devolveria o dia anterior antes das 21h.
+function hojeISO() {
+  const d = new Date();
+  const mes = String(d.getMonth() + 1).padStart(2, "0");
+  const dia = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${mes}-${dia}`;
+}
 
 // Formulário de registro de defeito do sistema fake.
 //
@@ -175,7 +187,18 @@ export default function FormularioDefeito({ onRegistrar }) {
           )}
         </Campo>
 
-        <Campo id="campo-data" rotulo="Data de detecção" obrigatorio erro={erros.data} dica="Não pode estar no futuro.">
+        {/* O <input type="date"> desenha o calendário e exibe a data no formato
+            do idioma do navegador — em pt-BR, dd/mm/aaaa. A dica repete o
+            formato por escrito para quem digita em vez de usar o calendário, e
+            `min`/`max` dão ao navegador os mesmos limites que a validação
+            aplica, para o erro aparecer antes do envio. */}
+        <Campo
+          id="campo-data"
+          rotulo="Data de detecção"
+          obrigatorio
+          erro={erros.data}
+          dica={`No formato ${FORMATO_DATA_BR}, entre ${formatarDataBR(LIMITES.dataMinima)} e hoje (${formatarDataObjBR(new Date())}).`}
+        >
           {(props) => (
             <input
               {...props}
@@ -183,6 +206,8 @@ export default function FormularioDefeito({ onRegistrar }) {
               type="date"
               name="data"
               data-testid="input-data"
+              min={LIMITES.dataMinima}
+              max={hojeISO()}
               value={valores.data}
               onChange={alterar("data")}
             />

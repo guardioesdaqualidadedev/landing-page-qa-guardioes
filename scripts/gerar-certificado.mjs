@@ -282,9 +282,9 @@ function montarHtml({ nome, horas, data, codigo, assinante, cargo, logoNavy, log
     line-height: 1.15;
     color: ${azulMarinho};
   }
-  /* 0.6mm em vez de 1pt: fio de 1pt cai em offset subpixel e some em alguns
-     renderizadores quando o nome quebra em duas linhas. */
-  .regua { width: 120mm; height: 0.6mm; background: ${laranja}; margin: 5mm auto 0; }
+  /* flex: none é essencial — sem ele, o flex-shrink do container esmaga a régua
+     até a altura zero quando um nome longo quebra em duas linhas. */
+  .regua { flex: none; width: 120mm; height: 0.4mm; background: ${laranja}; margin: 5mm auto 0; }
 
   .corpo {
     margin: 7mm auto 0;
