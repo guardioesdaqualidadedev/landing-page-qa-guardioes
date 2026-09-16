@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relatório final de acessibilidade — Projeto Social Garapuvu</title>
+<meta name="description" content="Auditoria de acessibilidade do site do Projeto Social Garapuvu: varredura automática, navegação por teclado e análise dos vídeos do YouTube.">
+<style>:root{--bg:#fbfaf8;--sup:#fff;--sup2:#f3f1ec;--txt:#1a1a19;--txt2:#4f4d49;--linha:#ddd8d0;
+--controle:#6e6a64;--acento:#08429c;--acento-sup:#e7eefb;--acao-txt:#fff;
+--crit:#9e1420;--crit-bg:#fdecee;--serio:#8a4600;--serio-bg:#fdf0e3;--mod:#63550a;--mod-bg:#fbf5dd;
+--aviso:#3c4a57;--aviso-bg:#eef2f6;--ok:#15613c;--ok-bg:#e5f5ec;--raio:12px;
+--sombra:0 1px 2px rgba(0,0,0,.05),0 8px 24px rgba(0,0,0,.05)}
+@media (prefers-color-scheme:dark){:root{--bg:#121317;--sup:#1b1d22;--sup2:#23262c;--txt:#edeff2;--txt2:#b3b7be;
+--linha:#333740;--controle:#98a0aa;--acento:#8ab6ff;--acento-sup:#1a2740;--acao-txt:#0d1117;
+--crit:#ff9ba3;--crit-bg:#3a1a1e;--serio:#ffbe7a;--serio-bg:#3a2612;--mod:#e9d67a;--mod-bg:#332d10;
+--aviso:#b8c6d4;--aviso-bg:#222a33;--ok:#84d8ab;--ok-bg:#12301f;
+--sombra:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3)}}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:1rem/1.65 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%}
+.env{max-inline-size:80ch;margin-inline:auto;padding-inline:22px}
+a{color:var(--acento);text-underline-offset:.15em}
+:where(a,button,summary,[tabindex]):focus-visible{outline:3px solid var(--acento);outline-offset:3px;border-radius:5px}
+.pular{position:absolute;inset-inline-start:-9999px}
+.pular:focus{position:static;display:inline-block;margin:10px;padding:10px 16px;background:var(--acento);color:var(--acao-txt);border-radius:8px}
+header.topo{background:var(--sup);border-block-end:1px solid var(--linha);padding-block:40px 30px}
+.selo{display:inline-block;margin:0 0 12px;padding:4px 12px;border:1px solid var(--linha);border-radius:999px;font-size:max(.78rem,12.5px);letter-spacing:.07em;text-transform:uppercase;color:var(--txt2)}
+h1{font-size:clamp(1.7rem,4.5vw,2.4rem);line-height:1.18;margin:0 0 14px;letter-spacing:-.02em}
+.ficha{margin:0;color:var(--txt2);font-size:.95rem;word-break:break-word}
+.ficha strong{color:var(--txt)}
+main{padding-block:10px 40px}
+section{margin-block:48px}
+h2{font-size:1.4rem;line-height:1.25;margin:0 0 12px;padding-block-end:10px;border-block-end:2px solid var(--linha)}
+h3{font-size:1.1rem;margin:28px 0 8px}
+h4{font-size:.83rem;margin:16px 0 4px;text-transform:uppercase;letter-spacing:.06em;color:var(--txt2)}
+p{margin:0 0 14px;max-inline-size:78ch}
+ul,ol{margin:0 0 14px;padding-inline-start:24px;max-inline-size:78ch}
+li{margin-block-end:7px}
+.sumario{display:flex;flex-wrap:wrap;gap:8px;margin-block:16px;padding:0;list-style:none}
+.sumario a{display:inline-block;font-size:max(.85rem,12.6px);padding:5px 13px;background:var(--sup);border:1px solid var(--linha);border-radius:999px;text-decoration:none}
+.sumario a:hover{background:var(--acento-sup)}
+.painel{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-block:18px}
+.cartao{background:var(--sup);border:1px solid var(--linha);border-radius:var(--raio);padding:16px 18px;box-shadow:var(--sombra)}
+.cartao .num{display:block;font-size:2rem;font-weight:700;line-height:1.1}
+.cartao .rot{font-size:max(.85rem,12.6px);color:var(--txt2)}
+.c-critico{border-inline-start:6px solid var(--crit)}.c-critico .num{color:var(--crit)}
+.c-serio{border-inline-start:6px solid var(--serio)}.c-serio .num{color:var(--serio)}
+.c-moderado{border-inline-start:6px solid var(--mod)}.c-moderado .num{color:var(--mod)}
+.c-aviso{border-inline-start:6px solid var(--aviso)}.c-aviso .num{color:var(--aviso)}
+.c-ok{border-inline-start:6px solid var(--ok)}.c-ok .num{color:var(--ok)}
+.sev{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border-radius:999px;font-size:max(.76rem,12.5px);font-weight:700;white-space:nowrap;border:1px solid currentColor}
+.sev i{display:inline-grid;place-items:center;inline-size:16px;block-size:16px;border-radius:50%;background:currentColor;color:var(--sup);font-size:.62rem;font-style:normal}
+.s-critico{color:var(--crit);background:var(--crit-bg)}.s-serio{color:var(--serio);background:var(--serio-bg)}
+.s-moderado{color:var(--mod);background:var(--mod-bg)}.s-aviso{color:var(--aviso);background:var(--aviso-bg)}
+.achado{background:var(--sup);border:1px solid var(--linha);border-radius:var(--raio);padding:18px 20px;margin-block-end:16px}
+.b-critico{border-inline-start:6px solid var(--crit)}.b-serio{border-inline-start:6px solid var(--serio)}
+.b-moderado{border-inline-start:6px solid var(--mod)}.b-aviso{border-inline-start:6px solid var(--aviso)}
+.achado h3{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 8px;font-size:1.05rem}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.pilula{font-size:max(.75rem,12.5px);color:var(--txt2);background:var(--sup2);border:1px solid var(--linha);border-radius:999px;padding:2px 9px}
+.nota{background:var(--sup);border:1px solid var(--linha);border-inline-start:6px solid var(--acento);border-radius:var(--raio);padding:16px 20px;margin-block:18px}
+.nota :last-child{margin-block-end:0}
+.nota.ok{border-inline-start-color:var(--ok);background:var(--ok-bg)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:max(.88em,12.6px);background:var(--sup2);border:1px solid var(--linha);border-radius:5px;padding:1px 5px;word-break:break-word}
+pre{margin:8px 0 0;padding:14px 16px;background:var(--sup2);border:1px solid var(--linha);border-radius:10px;overflow-x:auto;font-size:max(.84rem,12.6px);line-height:1.55}
+pre code{background:none;border:0;padding:0;white-space:pre}
+.rolagem{overflow-x:auto}
+table{inline-size:100%;border-collapse:collapse;font-size:max(.92rem,12.8px);background:var(--sup);border:1px solid var(--linha);border-radius:var(--raio);overflow:hidden}
+caption{text-align:start;font-weight:600;padding-block-end:8px;color:var(--txt2);font-size:max(.9rem,12.8px)}
+th,td{text-align:start;padding:9px 13px;border-block-end:1px solid var(--linha);vertical-align:top}
+th{background:var(--sup2);font-size:max(.78rem,12.5px);text-transform:uppercase;letter-spacing:.05em}
+tbody tr:last-child td{border-block-end:0}
+.dentro{background:var(--serio-bg);color:var(--serio);font-weight:700}
+.passo{font-variant-numeric:tabular-nums;color:var(--txt2)}
+footer{border-block-start:1px solid var(--linha);background:var(--sup);padding-block:26px 42px;color:var(--txt2);font-size:max(.92rem,12.8px)}
+@media print{body{background:#fff}.sumario,.pular{display:none}.achado,.cartao{break-inside:avoid;border:1px solid #999}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<a class="pular" href="#conteudo">Pular para o conteúdo do relatório</a>
+
+<header class="topo"><div class="env">
+  <p class="selo">Relatório final · auditoria de acessibilidade</p>
+  <h1>Projeto Social Garapuvu</h1>
+  <p class="ficha">
+    <strong>Página:</strong> Projeto Social Garapuvu 2026<br>
+    <strong>Endereço:</strong> https://projeto-garapuvu.web.app/<br>
+    <strong>Data da varredura:</strong> 14/09/2026<br>
+    <strong>Ferramenta:</strong> Auditor de Acessibilidade v1.1 — 91 verificações (WCAG 2.2 níveis A e AA, mais boas práticas)<br>
+    <strong>Condições:</strong> janela de 1280 × 900 px · 399 elementos analisados · 57 ms · nenhuma folha de estilo externa bloqueada
+  </p>
+  <nav aria-label="Seções do relatório"><ul class="sumario">
+    <li><a href="#resumo">Resumo</a></li>
+    <li><a href="#achados">Achados da varredura</a></li>
+    <li><a href="#complementares">Análises complementares</a></li>
+    <li><a href="#teclado">Teclado</a></li>
+    <li><a href="#links">Links</a></li>
+    <li><a href="#videos">Vídeos do YouTube</a></li>
+    <li><a href="#plano">Plano de correção</a></li>
+    <li><a href="#metodo">Método e limites</a></li>
+  </ul></nav>
+</div></header>
+
+<main id="conteudo" tabindex="-1"><div class="env">
+
+<section id="resumo" aria-labelledby="h-resumo">
+  <h2 id="h-resumo">Resumo</h2>
+  <p>A página passou em <strong>81 das 91 verificações</strong> e <strong>não tem nenhum achado crítico</strong>. Para um site institucional com vídeo incorporado, é um resultado acima da média: a marcação está limpa, os players estão bem configurados e o indicador de foco funciona em todos os botões.</p>
+
+  <div class="painel">
+    <div class="cartao c-critico"><span class="num">0</span><span class="rot">críticos</span></div>
+    <div class="cartao c-serio"><span class="num">2</span><span class="rot">sérios<br>(3 ocorrências)</span></div>
+    <div class="cartao c-moderado"><span class="num">3</span><span class="rot">moderados<br>(14 ocorrências)</span></div>
+    <div class="cartao c-aviso"><span class="num">5</span><span class="rot">avisos<br>(30 ocorrências)</span></div>
+    <div class="cartao c-ok"><span class="num">81</span><span class="rot">aprovadas<br>(de 91 executadas)</span></div>
+  </div>
+
+  <p>O que segura a nota não é a marcação: são <strong>os vídeos</strong>. Os dois achados sérios e boa parte do trabalho pendente estão na seção de vídeo — não no HTML dela, que está bem feito, mas no que falta em volta: transcrição, legenda revisada e um caminho de teclado que não obrigue a atravessar o player.</p>
+</section>
+
+<section id="achados" aria-labelledby="h-achados">
+  <h2 id="h-achados">Achados da varredura automática</h2>
+
+  <article class="achado b-serio">
+    <h3><span class="sev s-serio"><i aria-hidden="true">S</i>Sério</span> <span>Vídeo incorporado sem transcrição nem indicação de legenda</span></h3>
+    <p class="meta"><span class="pilula">2 ocorrências</span><span class="pilula">Mídia</span><span class="pilula">WCAG 1.2.2 (A) e 1.2.3 (A)</span></p>
+    <p>Incorporar um player não garante legenda: a legenda vive no serviço de vídeo, não na página. Detalhado na <a href="#videos">seção de vídeos</a>, com a verificação feita direto no YouTube.</p>
+  </article>
+
+  <article class="achado b-serio">
+    <h3><span class="sev s-serio"><i aria-hidden="true">S</i>Sério</span> <span>Página sem região de conteúdo principal</span></h3>
+    <p class="meta"><span class="pilula">1 ocorrência</span><span class="pilula">Estrutura</span><span class="pilula">WCAG 1.3.1 (A) e 2.4.1 (A)</span></p>
+    <p>Não existe <code>&lt;main&gt;</code> nem <code>role="main"</code>. Leitores de tela oferecem um atalho para "ir ao conteúdo principal"; sem essa região, o atalho não existe e a pessoa atravessa cabeçalho e herói a cada visita. Combina com a ausência de link de pular, apontada na <a href="#teclado">seção de teclado</a>.</p>
+    <h4>Como corrigir</h4>
+<pre><code>&lt;a class="gp-skip" href="#conteudo"&gt;Pular para o conteúdo&lt;/a&gt;
+&lt;header&gt; ... &lt;/header&gt;
+&lt;main id="conteudo" tabindex="-1"&gt; ... &lt;/main&gt;
+&lt;footer&gt; ... &lt;/footer&gt;</code></pre>
+  </article>
+
+  <article class="achado b-moderado">
+    <h3><span class="sev s-moderado"><i aria-hidden="true">M</i>Moderado</span> <span>Seis links abrem em nova aba sem avisar</span></h3>
+    <p class="meta"><span class="pilula">6 ocorrências</span><span class="pilula">Links</span><span class="pilula">WCAG 3.2.5 / técnica G201</span></p>
+    <p>Lista completa e correção sugerida na <a href="#links">seção de links</a>.</p>
+  </article>
+
+  <article class="achado b-moderado">
+    <h3><span class="sev s-moderado"><i aria-hidden="true">M</i>Moderado</span> <span>Limite de controle com contraste abaixo de 3:1</span></h3>
+    <p class="meta"><span class="pilula">7 ocorrências</span><span class="pilula">Cor e contraste</span><span class="pilula">WCAG 1.4.11 (AA)</span></p>
+    <p>Os itens da playlist de encontros (<code>.gp-epitem</code>) usam borda <code>#22405f</code> sobre fundo <code>#16304f</code> — razão de <strong>1,69:1</strong>, quando o mínimo é 3:1. O item ativo tem borda transparente sobre fundo amarelo, o que resolve pelo preenchimento, mas os demais ficam sem limite perceptível: não dá para saber onde termina um episódio e começa o outro.</p>
+    <h4>Como corrigir</h4>
+<pre><code>/* borda com 3:1 sobre o fundo do painel */
+.gp-epitem { border: 1px solid #5c7fa6; }</code></pre>
+  </article>
+
+  <article class="achado b-moderado">
+    <h3><span class="sev s-moderado"><i aria-hidden="true">M</i>Moderado</span> <span>Alvo de clique menor que 24 × 24 px</span></h3>
+    <p class="meta"><span class="pilula">1 ocorrência</span><span class="pilula">Controles</span><span class="pilula">WCAG 2.5.8 (AA, 2.2)</span></p>
+    <p>O link <strong>"Abrir no YouTube ↗"</strong> mede 132 × 17 px. A largura está boa; a altura, não. Como ele não está dentro de uma frase, não cai na exceção de alvo em linha de texto.</p>
+    <h4>Como corrigir</h4>
+<pre><code>.gp-link { display: inline-flex; align-items: center;
+           min-block-size: 24px; padding-block: 4px; }</code></pre>
+  </article>
+
+  <article class="achado b-aviso">
+    <h3><span class="sev s-aviso"><i aria-hidden="true">A</i>Aviso</span> <span>Player do YouTube sem legenda ligada por padrão</span></h3>
+    <p class="meta"><span class="pilula">2 ocorrências</span><span class="pilula">Mídia</span><span class="pilula">Boa prática</span></p>
+    <p>Detalhado na <a href="#videos">seção de vídeos</a>.</p>
+  </article>
+
+  <article class="achado b-aviso">
+    <h3><span class="sev s-aviso"><i aria-hidden="true">A</i>Aviso</span> <span>Texto sobre gradiente: contraste precisa de conferência manual</span></h3>
+    <p class="meta"><span class="pilula">2 ocorrências</span><span class="pilula">Cor e contraste</span><span class="pilula">WCAG 1.4.3 (AA)</span></p>
+    <p>Na faixa "Quer fazer parte do projeto?" o texto fica sobre gradiente. Nenhuma ferramenta automática mede isso, porque o contraste muda de pixel para pixel — e é justamente onde mais aparecem falhas reais, já que o gradiente se comporta de um jeito no desktop e de outro no celular. Confira o pior ponto manualmente.</p>
+  </article>
+
+  <article class="achado b-aviso">
+    <h3><span class="sev s-aviso"><i aria-hidden="true">A</i>Aviso</span> <span>Entrelinha menor que 1,5 em blocos de texto</span></h3>
+    <p class="meta"><span class="pilula">2 ocorrências</span><span class="pilula">Espaçamento</span><span class="pilula">WCAG 1.4.12 (AA)</span></p>
+    <p>Dois parágrafos com <code>line-height: 1.2</code>. Linhas coladas fazem o olho perder a linha ao voltar para a esquerda — efeito maior em pessoas com dislexia e baixa visão.</p>
+  </article>
+
+  <article class="achado b-aviso">
+    <h3><span class="sev s-aviso"><i aria-hidden="true">A</i>Aviso</span> <span>Tamanhos de fonte declarados em px</span></h3>
+    <p class="meta"><span class="pilula">4 ocorrências</span><span class="pilula">Boas práticas</span><span class="pilula">WCAG 1.4.4 (AA)</span></p>
+    <p>Três regras CSS fixam <code>font-size</code> em pixels (entre elas <code>.gp-eyebrow</code> e <code>.gp-btn</code>). Quem aumenta o tamanho padrão da fonte no navegador não vê efeito nesses trechos: a preferência que a pessoa configurou é silenciosamente ignorada. Declarar em <code>rem</code> resolve.</p>
+  </article>
+
+  <article class="achado b-aviso">
+    <h3><span class="sev s-aviso"><i aria-hidden="true">A</i>Aviso</span> <span>Texto que passa no AA mas não no AAA</span></h3>
+    <p class="meta"><span class="pilula">20 ocorrências</span><span class="pilula">Boas práticas</span><span class="pilula">WCAG 1.4.6 (AAA)</span></p>
+    <p>Vinte trechos entre 4,5:1 e 7:1 — conformes ao nível AA, que é o exigido. Fica como meta para os textos de leitura longa, não como pendência.</p>
+  </article>
+</section>
+
+<section id="complementares" aria-labelledby="h-comp">
+  <h2 id="h-comp">Análises complementares</h2>
+  <p>Esta seção reúne o que a varredura automática <em>não</em> responde sozinha: a navegação por teclado exercitada de verdade, o destino e o rótulo de cada link externo, e o conteúdo dos vídeos do YouTube conferido no próprio serviço.</p>
+</section>
+
+<section id="teclado" aria-labelledby="h-teclado">
+  <h2 id="h-teclado">Navegação por teclado: o Tab pressionado de verdade</h2>
+
+  <div class="nota">
+    <h3 style="margin-top:0">Por que isto é um teste à parte</h3>
+    <p>Um <code>KeyboardEvent</code> disparado por script <strong>não move o foco</strong> — o navegador ignora Tab vindo de JavaScript, por segurança. Uma varredura estática consegue apontar indícios (<code>tabindex</code> positivo, <code>outline</code> removido, focável dentro de <code>aria-hidden</code>), mas não responde à pergunta que interessa: <em>dá para usar esta página só com o teclado?</em></p>
+    <p>O passeio abaixo foi feito com a tecla Tab real, enviada ao navegador, uma parada de cada vez, registrando a cada passo qual elemento ficou com o foco, onde ele está na página e se algo muda visualmente ao recebê-lo.</p>
+  </div>
+
+  <h3>O caminho observado</h3>
+  <p>A página tem <strong>25 elementos focáveis</strong> no HTML. O primeiro deles é o botão de tema, no cabeçalho. A partir do herói, o caminho registrado foi este:</p>
+
+  <div class="rolagem">
+  <table>
+    <caption>Paradas do foco, na ordem em que acontecem</caption>
+    <thead><tr><th scope="col">Tab</th><th scope="col">Onde o foco parou</th><th scope="col">Posição</th><th scope="col">Tamanho</th><th scope="col">Indicador de foco</th></tr></thead>
+    <tbody>
+      <tr><td class="passo">1</td><td>Botão <strong>Quero participar →</strong></td><td>x 97, y 784</td><td>197 × 48</td><td>outline visível</td></tr>
+      <tr><td class="passo">2</td><td>Botão <strong>▶ Assistir as aulas</strong></td><td>x 308, y 784</td><td>195 × 48</td><td>outline visível</td></tr>
+      <tr><td class="passo">3</td><td>Botão <strong>Ver o conteúdo</strong></td><td>x 517, y 784</td><td>171 × 48</td><td>outline visível</td></tr>
+      <tr class="dentro"><td class="passo">4 a 9</td><td>Dentro do <strong>player do vídeo de apresentação</strong> — seis paradas seguidas, todas dentro do mesmo iframe</td><td>x 749, y 434</td><td>420 × 236</td><td>nenhum, do lado da página</td></tr>
+      <tr><td class="passo">10</td><td>Botão <strong>Módulo 01 — Fundamentos de Testes</strong></td><td>x 97, y 1967</td><td>320 × 99</td><td>outline visível</td></tr>
+      <tr><td class="passo">11 a 14</td><td>Botões <strong>Módulo 02, 03, 04 e Bônus</strong></td><td>x 97</td><td>320 × 76 a 99</td><td>outline visível</td></tr>
+      <tr class="dentro"><td class="passo">15 em diante</td><td>Dentro do <strong>player do Encontro 1</strong> — mesmo padrão do primeiro player</td><td>x 97, y 2858</td><td>664 × 374</td><td>nenhum, do lado da página</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>O que isso revela</h3>
+
+  <article class="achado b-serio">
+    <h3><span class="sev s-serio"><i aria-hidden="true">S</i>Sério</span> <span>O player de vídeo consome seis paradas de teclado, e não há como pular</span></h3>
+    <p>Cada iframe do YouTube insere os próprios controles na ordem de tabulação: reproduzir, barra de progresso, volume, legendas, configurações, tela cheia. São <strong>seis paradas por vídeo</strong>. Com dois vídeos na página e nenhum link de atalho, quem navega pelo teclado atravessa doze paradas dentro de players de terceiros só para percorrer a página.</p>
+    <p>Repare que a página tem 25 elementos focáveis, mas a experiência real de teclado é bem mais longa do que esse número sugere — os players não aparecem na contagem do HTML.</p>
+    <h4>Como corrigir</h4>
+    <p>Duas medidas independentes, ambas simples:</p>
+<pre><code>&lt;!-- 1. Atalho no topo, o primeiro elemento focável da página --&gt;
+&lt;a class="gp-skip" href="#conteudo"&gt;Pular para o conteúdo&lt;/a&gt;
+
+&lt;!-- 2. Atalho local, logo antes de cada player --&gt;
+&lt;a class="gp-skip" href="#depois-do-video-1"&gt;Pular o player do vídeo&lt;/a&gt;
+&lt;div class="moldura-video"&gt;&lt;iframe ... &gt;&lt;/iframe&gt;&lt;/div&gt;
+&lt;span id="depois-do-video-1" tabindex="-1"&gt;&lt;/span&gt;</code></pre>
+<pre><code>/* o atalho fica oculto até receber foco */
+.gp-skip { position: absolute; inset-inline-start: -9999px; }
+.gp-skip:focus { position: static; display: inline-block;
+                 padding: 10px 16px; background: #F2B705; color: #0A1728; }</code></pre>
+  </article>
+
+  <article class="achado b-moderado">
+    <h3><span class="sev s-moderado"><i aria-hidden="true">M</i>Moderado</span> <span>Sem link de "pular para o conteúdo"</span></h3>
+    <p>A varredura confirmou: não existe nenhum <code>&lt;a href="#..."&gt;</code> de atalho na página. Junto com a ausência de <code>&lt;main&gt;</code>, isso significa que não há nenhuma forma de saltar o topo — nem por link, nem pelo atalho de regiões do leitor de tela.</p>
+  </article>
+
+  <div class="nota ok">
+    <h3 style="margin-top:0">O que está correto no teclado</h3>
+    <ul>
+      <li><strong>Todo botão mostra o foco.</strong> Em cada uma das paradas fora dos players, o estilo muda visivelmente ao receber o foco — há <code>outline</code> de verdade, não só mudança de cor. É a falha mais comum em sites brasileiros, e aqui ela não existe.</li>
+      <li><strong>Nenhum <code>tabindex</code> positivo.</strong> A ordem de tabulação segue a ordem do HTML, sem ordem paralela atropelando a navegação.</li>
+      <li><strong>A ordem do foco acompanha a ordem visual.</strong> O foco desce pela página sem saltos para trás.</li>
+      <li><strong>Nenhuma armadilha de foco.</strong> O foco entra e sai dos players normalmente — é demorado, não é uma prisão.</li>
+      <li><strong>Os alvos são generosos.</strong> Botões de 48 px de altura e cartões de módulo de 320 × 99 px, bem acima do mínimo de 24 px.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="links" aria-labelledby="h-links">
+  <h2 id="h-links">Os seis links que abrem em nova aba</h2>
+  <p>Todos os seis trazem <code>rel="noopener noreferrer"</code> — a parte de segurança está resolvida. O que falta é o aviso: nenhum deles diz, no nome que a tecnologia assistiva anuncia, que vai abrir em outra aba.</p>
+  <p>A nova aba muda o contexto sem avisar. Quem não vê a tela pode levar um tempo até perceber que mudou de página, e o botão "voltar" deixa de funcionar como esperado. Os quatro ícones do rodapé têm <code>aria-label</code> bem escrito, o que já resolve metade do problema — só falta a informação da nova aba.</p>
+
+  <div class="rolagem">
+  <table>
+    <caption>Links com <code>target="_blank"</code></caption>
+    <thead><tr><th scope="col">Nome anunciado hoje</th><th scope="col">Destino</th><th scope="col">Tamanho</th></tr></thead>
+    <tbody>
+      <tr><td>Abrir no YouTube ↗</td><td>Vídeo do Encontro 1 na playlist</td><td>132 × 17 <span class="pilula">alvo baixo</span></td></tr>
+      <tr><td>Ver a playlist completa no YouTube</td><td>Playlist do canal</td><td>380 × 46</td></tr>
+      <tr><td><em>(aria-label)</em> Instagram do Projeto Garapuvu</td><td>instagram.com/projetogarapuvu</td><td>42 × 42</td></tr>
+      <tr><td><em>(aria-label)</em> Canal do Projeto Garapuvu no YouTube</td><td>youtube.com/@ProjetoGarapuvuFloripa</td><td>42 × 42</td></tr>
+      <tr><td><em>(aria-label)</em> LinkedIn de Douglas Adriano Queiroz</td><td>br.linkedin.com/in/douglas-adriano-queiroz…</td><td>42 × 42</td></tr>
+      <tr><td><em>(aria-label)</em> Repositório do Projeto Garapuvu no GitHub</td><td>github.com/douglasqueirozfloripa/…</td><td>42 × 42</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Como corrigir</h3>
+<pre><code>&lt;!-- texto visível: a informação entra no próprio texto --&gt;
+&lt;a href="..." target="_blank" rel="noopener noreferrer"&gt;
+  Ver a playlist completa no YouTube (abre em nova aba)
+&lt;/a&gt;
+
+&lt;!-- ícone: a informação entra no aria-label --&gt;
+&lt;a href="..." target="_blank" rel="noopener noreferrer"
+   aria-label="Instagram do Projeto Garapuvu (abre em nova aba)"&gt;
+  &lt;svg aria-hidden="true" focusable="false"&gt;...&lt;/svg&gt;
+&lt;/a&gt;</code></pre>
+  <p>A seta ↗ que já aparece em "Abrir no YouTube" é uma boa pista <em>visual</em>, mas não é anunciada — símbolo não substitui texto para quem ouve a página.</p>
+</section>
+
+<section id="videos" aria-labelledby="h-videos">
+  <h2 id="h-videos">Os dois vídeos do YouTube</h2>
+
+  <div class="nota ok">
+    <h3 style="margin-top:0">A marcação dos embeds está acima da média</h3>
+    <ul>
+      <li><code>title</code> descritivo nos dois — o leitor de tela anuncia "Vídeo de apresentação do Projeto Social Garapuvu", não "quadro".</li>
+      <li><code>youtube-nocookie.com</code> nos dois — menos rastreamento para quem visita.</li>
+      <li><code>loading="lazy"</code> — o player só carrega quando chega perto da tela.</li>
+      <li><code>allowfullscreen</code> presente. Tela cheia é o principal recurso de ampliação de quem tem baixa visão para assistir a um vídeo com código na tela.</li>
+      <li>Contêiner com <code>aspect-ratio: 16 / 9</code> e largura fluida — responsivo de verdade, sem o truque antigo de <code>padding-top: 56.25%</code>. O player se adapta ao zoom e ao celular.</li>
+    </ul>
+  </div>
+
+  <h3>O problema não está no HTML, está no conteúdo</h3>
+
+  <article class="achado b-serio">
+    <h3><span class="sev s-serio"><i aria-hidden="true">S</i>Sério</span> <span>Os dois vídeos têm apenas legenda gerada automaticamente</span></h3>
+    <p class="meta"><span class="pilula">2 ocorrências</span><span class="pilula">WCAG 1.2.2 Legendas (A)</span></p>
+    <p>Consultando a lista de faixas de legenda de cada vídeo direto no YouTube, os dois trazem uma única faixa, em português, do tipo <code>asr</code> — <em>automatic speech recognition</em>, ou seja, transcrição automática sem revisão.</p>
+
+    <div class="rolagem">
+    <table>
+      <caption>Faixas de legenda encontradas</caption>
+      <thead><tr><th scope="col">Vídeo</th><th scope="col">Duração</th><th scope="col">Faixas de legenda</th></tr></thead>
+      <tbody>
+        <tr><td>Apresentação do instrutor e boas-vindas</td><td>47 segundos</td><td>Português <strong>(gerada automaticamente)</strong></td></tr>
+        <tr><td>Encontro 1 — Guia de estudos, fundamentos de testes e preparação do ambiente</td><td>64 minutos</td><td>Português <strong>(gerada automaticamente)</strong></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p><strong>Legenda automática não cumpre o critério 1.2.2.</strong> Ela erra nomes próprios, não pontua, não separa quem está falando e tropeça em termo técnico. Num conteúdo que ensina teste de software, os termos errados são exatamente as palavras que importam: "teste estático", "partição de equivalência", "valor limite", "Cursor IDE" — são justamente essas que o reconhecimento automático troca. Uma legenda que escreve "teste sintático" no lugar de "teste estático" não é acessibilidade, é ruído.</p>
+
+    <h4>Como corrigir</h4>
+    <ol>
+      <li>No YouTube Studio, abrir <strong>Legendas</strong> do vídeo, <strong>duplicar a faixa automática</strong> e revisar. Para 64 minutos de aula é trabalho de uma sessão, e é a correção de maior impacto da lista inteira.</li>
+      <li>Priorize o vídeo de 47 segundos primeiro: é rápido e é o primeiro contato de quem chega no site.</li>
+      <li>Depois de revisar, ligue a legenda por padrão no embed (próximo item).</li>
+    </ol>
+  </article>
+
+  <article class="achado b-serio">
+    <h3><span class="sev s-serio"><i aria-hidden="true">S</i>Sério</span> <span>A página não oferece transcrição nem menciona legenda</span></h3>
+    <p class="meta"><span class="pilula">2 ocorrências</span><span class="pilula">WCAG 1.2.3 (A)</span></p>
+    <p>A varredura procurou por "transcrição", "legenda", "Libras" e "audiodescrição" em todo o texto da página e não encontrou nenhuma dessas palavras. Para quem é surdo, quem tem internet ruim, quem está num lugar sem poder ligar o som, ou quem simplesmente prefere ler, não há alternativa nenhuma ao vídeo.</p>
+    <p>Numa aula de 64 minutos a transcrição vale por si só: ela permite buscar um trecho com Ctrl+F, copiar um comando citado na aula e revisar sem reassistir. E melhora a busca do site, de quebra.</p>
+    <h4>Como corrigir</h4>
+<pre><code>&lt;div class="moldura-video"&gt;
+  &lt;iframe src="https://www.youtube-nocookie.com/embed/ID?cc_load_policy=1&amp;amp;cc_lang_pref=pt&amp;amp;rel=0"
+          title="Encontro 1 — Guia de Estudos e Fundamentos de Testes"
+          allowfullscreen loading="lazy"
+          allow="fullscreen; picture-in-picture"&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+
+&lt;details class="gp-transcricao"&gt;
+  &lt;summary&gt;Transcrição do Encontro 1&lt;/summary&gt;
+  &lt;p&gt;[00:00] Boa noite, pessoal. Hoje vamos falar de fundamentos de teste...&lt;/p&gt;
+&lt;/details&gt;</code></pre>
+    <p>A transcrição revisada do YouTube pode ser baixada em <code>.srt</code> e colada aqui — o trabalho de revisão serve para as duas coisas ao mesmo tempo.</p>
+  </article>
+
+  <article class="achado b-aviso">
+    <h3><span class="sev s-aviso"><i aria-hidden="true">A</i>Aviso</span> <span>Legenda não vem ligada, e os dois embeds estão inconsistentes</span></h3>
+    <p class="meta"><span class="pilula">2 ocorrências</span><span class="pilula">Boa prática</span></p>
+    <p>Nenhum dos dois embeds traz <code>cc_load_policy=1</code>, então a legenda começa desligada e a pessoa precisa abrir o menu do player a cada vídeo. E os dois estão configurados de forma diferente entre si:</p>
+
+    <div class="rolagem">
+    <table>
+      <caption>Diferenças entre os dois embeds</caption>
+      <thead><tr><th scope="col">&nbsp;</th><th scope="col">Vídeo de apresentação</th><th scope="col">Encontro 1</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Parâmetros na URL</th><td>nenhum</td><td><code>rel=0&amp;modestbranding=1</code></td></tr>
+        <tr><th scope="row"><code>autoplay</code> no atributo <code>allow</code></th><td>não</td><td><strong>sim</strong>, sem necessidade</td></tr>
+        <tr><th scope="row"><code>cc_load_policy</code></th><td>ausente</td><td>ausente</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p>O <code>autoplay</code> na lista de permissões do segundo iframe não faz o vídeo tocar sozinho, porque não há <code>autoplay=1</code> na URL — mas é uma permissão concedida à toa. Vale remover e padronizar os dois com os mesmos parâmetros.</p>
+    <h4>Padrão sugerido para os dois</h4>
+<pre><code>src="https://www.youtube-nocookie.com/embed/ID?cc_load_policy=1&amp;amp;cc_lang_pref=pt&amp;amp;rel=0&amp;amp;modestbranding=1"
+allow="fullscreen; picture-in-picture; encrypted-media"
+allowfullscreen loading="lazy"</code></pre>
+  </article>
+
+  <article class="achado b-aviso">
+    <h3><span class="sev s-aviso"><i aria-hidden="true">A</i>Aviso</span> <span>Aula de 64 minutos sem capítulos</span></h3>
+    <p class="meta"><span class="pilula">1 ocorrência</span><span class="pilula">Fora da norma, ganho real</span></p>
+    <p>A descrição do Encontro 1 tem 17 caracteres e nenhuma marcação de tempo, então o YouTube não gera capítulos. Capítulo não é critério da WCAG, mas é o que permite voltar a um trecho sem varrer a barra de progresso — que é exatamente a operação mais difícil para quem usa teclado ou tem dificuldade motora.</p>
+    <h4>Como corrigir</h4>
+<pre><code>Descrição do vídeo, uma linha por capítulo:
+00:00 Boas-vindas e guia de estudos
+04:30 O que é teste de software
+18:15 Os sete princípios
+42:00 Preparação do ambiente</code></pre>
+  </article>
+</section>
+
+<section id="plano" aria-labelledby="h-plano">
+  <h2 id="h-plano">Plano de correção, em ordem</h2>
+  <p>Da correção de maior impacto para a de menor, considerando esforço e quantidade de pessoas beneficiadas.</p>
+  <div class="rolagem">
+  <table>
+    <caption>Ordem sugerida de trabalho</caption>
+    <thead><tr><th scope="col">#</th><th scope="col">O quê</th><th scope="col">Onde</th><th scope="col">Esforço</th></tr></thead>
+    <tbody>
+      <tr><td class="passo">1</td><td>Revisar a legenda dos dois vídeos</td><td>YouTube Studio</td><td>Uma sessão por vídeo</td></tr>
+      <tr><td class="passo">2</td><td>Publicar a transcrição abaixo de cada vídeo</td><td>HTML da página</td><td>Reaproveita o trabalho do item 1</td></tr>
+      <tr><td class="passo">3</td><td>Adicionar <code>&lt;main id="conteudo" tabindex="-1"&gt;</code> e o link de pular</td><td>Componente de layout</td><td>Minutos</td></tr>
+      <tr><td class="passo">4</td><td>Atalho para pular cada player de vídeo</td><td>Seção de vídeos</td><td>Minutos</td></tr>
+      <tr><td class="passo">5</td><td>Avisar "(abre em nova aba)" nos seis links</td><td>Herói, encontros e rodapé</td><td>Minutos</td></tr>
+      <tr><td class="passo">6</td><td>Padronizar os embeds com <code>cc_load_policy=1&amp;cc_lang_pref=pt</code></td><td>Seção de vídeos</td><td>Minutos</td></tr>
+      <tr><td class="passo">7</td><td>Borda dos itens da playlist com 3:1</td><td>CSS <code>.gp-epitem</code></td><td>Uma linha</td></tr>
+      <tr><td class="passo">8</td><td>Altura mínima de 24 px no link "Abrir no YouTube"</td><td>CSS <code>.gp-link</code></td><td>Uma linha</td></tr>
+      <tr><td class="passo">9</td><td>Entrelinha 1,5 nos dois parágrafos e <code>font-size</code> em <code>rem</code></td><td>CSS</td><td>Poucas linhas</td></tr>
+      <tr><td class="passo">10</td><td>Conferir manualmente o texto sobre gradiente</td><td>Faixa de chamada</td><td>Conferência visual</td></tr>
+      <tr><td class="passo">11</td><td>Capítulos na descrição do Encontro 1</td><td>YouTube</td><td>Minutos</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="metodo" aria-labelledby="h-metodo">
+  <h2 id="h-metodo">Método e limites</h2>
+  <h3>Como cada parte foi levantada</h3>
+  <ul>
+    <li><strong>Varredura automática:</strong> Auditor de Acessibilidade v1.1 executado na página, com 91 verificações sobre o DOM e o CSS já calculado — ou seja, a página como ela ficou depois do JavaScript, não como está no código-fonte.</li>
+    <li><strong>Teclado:</strong> tecla Tab enviada ao navegador, uma parada por vez, com leitura do elemento em foco a cada passo e comparação do estilo calculado com e sem foco.</li>
+    <li><strong>Vídeos:</strong> atributos dos <code>&lt;iframe&gt;</code> lidos na página; faixas de legenda, duração e descrição lidas na resposta do próprio player do YouTube, vídeo a vídeo.</li>
+  </ul>
+
+  <h3>O que este relatório não cobre</h3>
+  <p>Teste automático alcança entre um terço e metade das barreiras reais. Continuam dependendo de julgamento humano, e não foram avaliados aqui:</p>
+  <ul>
+    <li>Se o texto alternativo das imagens descreve bem o que elas comunicam.</li>
+    <li>Se a ordem de leitura faz sentido ouvida do começo ao fim com leitor de tela.</li>
+    <li>Se a linguagem é compreensível para quem está começando na área.</li>
+    <li>Se a qualidade do áudio das aulas permite acompanhar sem legenda.</li>
+    <li>Comportamento em alto contraste do sistema e com espaçamento de texto ampliado.</li>
+  </ul>
+  <p>Nada substitui testar com pessoas que usam leitor de tela, ampliação ou só o teclado no dia a dia. Este documento é ponto de partida de uma avaliação, não laudo de conformidade.</p>
+
+  <h3>Sobre a linguagem usada</h3>
+  <p>Este relatório descreve <em>barreiras criadas pela página</em>, não limitações das pessoas. A deficiência aparece na interação entre a pessoa e um ambiente que não foi projetado para ela — quando a página melhora, a barreira deixa de existir. São usadas as formas recomendadas pela Lei Brasileira de Inclusão: "pessoa com deficiência", "pessoa cega", "pessoa com baixa visão", "pessoa surda".</p>
+</section>
+
+<section id="referencias" aria-labelledby="h-ref">
+  <h2 id="h-ref">Referências</h2>
+  <ul>
+    <li><strong>WCAG 2.2</strong> — recomendação do W3C de outubro de 2023, norma internacional de referência. A WCAG 3.0 existe apenas como rascunho de trabalho e não substitui a 2.2.</li>
+    <li><strong>ABNT NBR 17225:2025</strong> — acessibilidade em conteúdo e aplicações web, primeira norma técnica brasileira específica para web, com 146 diretrizes. Para aplicativos móveis, a equivalente é a NBR 17060.</li>
+    <li><strong>Lei 13.146/2015 (LBI)</strong> — o artigo 63 determina que sites de órgãos públicos e de empresas com sede ou representação comercial no Brasil sejam acessíveis.</li>
+    <li><strong>eMAG</strong> — modelo de acessibilidade em governo eletrônico.</li>
+    <li><strong>EN 301 549</strong> — norma europeia de acessibilidade em TIC, referência do European Accessibility Act.</li>
+  </ul>
+</section>
+
+</div></main>
+
+<footer><div class="env">
+  <p>Relatório final de acessibilidade do Projeto Social Garapuvu · varredura de 14/09/2026 · Auditor de Acessibilidade v1.1.</p>
+  <p>A auditoria rodou inteiramente no navegador: nenhum dado da página foi enviado para qualquer servidor.</p>
+</div></footer>
+
+</body>
+</html>
