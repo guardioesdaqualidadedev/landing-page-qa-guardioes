@@ -142,6 +142,39 @@ test.describe("Teclado — navegação global", () => {
     expect(volta.map(chaveDoFoco), "a volta com Shift+Tab não espelhou a ida").toEqual(esperado);
   });
 
+  // Defeito relatado em outubro/2026: do botão "Abrir o Playground QA", o Tab
+  // ia direto para os cartões da governança, pulando seis seções que só têm
+  // texto. Cada seção agora tem o título como parada do Tab.
+  test("do botão Abrir o Playground QA, o Tab passa pelo título de cada seção, em ordem", async ({ page, isMobile }) => {
+    await page.goto("/");
+    await page.getByTestId("cta-playground").focus();
+
+    const caminho = [];
+    for (let i = 0; i < 12; i++) {
+      await page.keyboard.press("Tab");
+      const f = await focoAtual(page);
+      caminho.push(f);
+      if (f && f.testid === "admin-linkedin-douglas") break;
+    }
+
+    expect(
+      caminho.map((f) => f && (f.id || f.papel || f.testid)),
+      `caminho do Tab:\n${listar(caminho)}`
+    ).toEqual([
+      "missao-titulo",
+      "objetivos-titulo",
+      "canais-titulo",
+      "roteamento-titulo",
+      // No celular a tabela de roteamento rola de lado, e a área com rolagem
+      // entra no Tab para as setas conseguirem rolá-la (WCAG 2.1.1).
+      ...(isMobile ? ["region"] : []),
+      "perfis-titulo",
+      "regras-titulo",
+      "governanca-titulo",
+      "admin-linkedin-douglas", // primeiro link dos cartões
+    ]);
+  });
+
   test("no cabeçalho, a ordem de tabulação segue a ordem visual", async ({ page, isMobile }) => {
     test.skip(isMobile, "No celular o cabeçalho é uma linha só — a checagem perde o sentido.");
 
@@ -198,7 +231,7 @@ test.describe("Teclado — menu recolhido", () => {
 
     await botao.focus();
     await page.keyboard.press(" ");
-    await expect(page.getByTestId("menu-mobile")).toHaveCount(0);
+    await expect(page.getByTestId("menu-mobile")).toBeHidden();
     await expect(botao).toHaveAttribute("aria-expanded", "false");
   });
 
@@ -232,7 +265,7 @@ test.describe("Teclado — menu recolhido", () => {
     await expect(page.getByTestId("menu-mobile")).toBeVisible();
 
     await page.keyboard.press("Escape");
-    await expect(page.getByTestId("menu-mobile"), "Esc não fechou o menu").toHaveCount(0);
+    await expect(page.getByTestId("menu-mobile"), "Esc não fechou o menu").toBeHidden();
     await expect(botao, "o foco não voltou para o botão do menu").toBeFocused();
   });
 });
@@ -343,16 +376,41 @@ test.describe("Teclado — Playground: formulário", () => {
     expect(quebras, "dentro do formulário o foco anda para trás em relação à ordem visual").toEqual([]);
   });
 
+  // Grupo de rádio é UMA parada do Tab (padrão do HTML e do WAI-ARIA): o Tab
+  // entra na opção marcada — ou na primeira —, as setas escolhem e o próximo
+  // Tab segue para o campo seguinte. A dica visível explica isso a quem enxerga.
+  test("a prioridade é uma parada só: o Tab entra, as setas escolhem e o Tab sai", async ({ page }) => {
+    const dica = page.getByTestId("dica-prioridade");
+    await expect(dica).toBeVisible();
+    await expect(page.getByTestId("radio-prioridade-P1")).toHaveAttribute("aria-describedby", /campo-prioridade-dica/);
+
+    await page.getByTestId("input-ocorrencias").focus();
+    await page.keyboard.press("Tab");
+    await expect(page.getByTestId("radio-prioridade-P1")).toBeFocused();
+
+    await page.keyboard.press("ArrowRight");
+    await expect(page.getByTestId("radio-prioridade-P2")).toBeFocused();
+    await expect(page.getByTestId("radio-prioridade-P2")).toBeChecked();
+
+    await page.keyboard.press("Tab");
+    await expect(page.getByTestId("input-passos"), "o Tab parou em outra opção em vez de sair do grupo").toBeFocused();
+
+    await page.keyboard.press("Shift+Tab");
+    await expect(page.getByTestId("radio-prioridade-P2"), "o Shift+Tab não voltou para a opção marcada").toBeFocused();
+  });
+
   test("enviar vazio pelo teclado anuncia o resumo de erros", async ({ page }) => {
     await page.getByTestId("btn-registrar").focus();
     await page.keyboard.press("Enter");
 
     const resumo = page.getByTestId("resumo-erros");
     await expect(resumo).toBeVisible();
-    await expect(resumo, "o resumo precisa de role=alert para ser anunciado sem roubar o foco").toHaveAttribute(
-      "role",
-      "alert"
-    );
+    // O resumo fica dentro de uma região role=alert que existe desde o início:
+    // um alerta que já nasce com o texto nem sempre é anunciado.
+    await expect(
+      page.getByRole("alert").filter({ has: resumo }),
+      "o resumo precisa estar numa região role=alert para ser anunciado sem roubar o foco"
+    ).toHaveCount(1);
     await expect(resumo).toContainText(/precisam? de atenção/);
   });
 

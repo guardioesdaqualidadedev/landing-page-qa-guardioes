@@ -42,3 +42,8 @@ blob-report/
 
 # Certificados emitidos — contêm nome de aluno; ficam só na máquina de quem emite
 certificados/
+
+# Suíte de acessibilidade: relatório, resultados e os vídeos de cada cenário
+playwright-report-acessibilidade/
+test-results-acessibilidade/
+tests/acessibilidade/videos/

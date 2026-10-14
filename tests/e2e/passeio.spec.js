@@ -59,7 +59,7 @@ test.describe("Passeio guiado pelo sistema", () => {
     await rolar(page, 1, 2200);
 
     await irPara(page, "#governanca");
-    await passo(page, "Governanca: quem cuida de que — Douglas, Camila e Amanda", 4500);
+    await passo(page, "Governanca: quem cuida de que — Douglas, Camila, Gabriel e Patricia", 4500);
     await rolar(page, 1, 2200);
     await passo(page, "Metricas de saude revisadas a cada quinzena", 4000);
 

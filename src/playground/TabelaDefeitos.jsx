@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { COLORS } from "../theme.js";
+import { AreaRolavel } from "../components/Acessivel.jsx";
 import { SEVERIDADES, STATUS, MODULOS } from "./dominio.js";
 import { prepararTabela, filtrarDefeitos, resumoPorSeveridade } from "./tabela.js";
 import { formatarDataBR } from "../utils/datas.js";
@@ -56,6 +57,10 @@ export default function TabelaDefeitos({ defeitos, onAtualizarStatus, onExcluir 
   const [ordenacao, setOrdenacao] = useState({ campo: "id", direcao: "asc" });
   const [pagina, setPagina] = useState(1);
   const [confirmando, setConfirmando] = useState(null);
+  const botoesExcluir = useRef({});
+  // Posição da linha recém-excluída, para o foco cair na linha que tomou o
+  // lugar dela depois que a tabela redesenhar.
+  const focoAposExcluir = useRef(null);
 
   const filtros = { busca, severidade, status, modulo };
 
@@ -90,6 +95,31 @@ export default function TabelaDefeitos({ defeitos, onAtualizarStatus, onExcluir 
   };
 
   const temFiltro = Boolean(busca || severidade || status || modulo);
+
+  // Fechar a confirmação (Esc ou Cancelar) devolve o foco ao "Excluir" da
+  // mesma linha. Sem isso o botão focado sumia junto com a confirmação e o
+  // foco caía no <body>: quem usa teclado voltava para o topo da página.
+  const fecharConfirmacao = (id) => {
+    setConfirmando(null);
+    botoesExcluir.current[id]?.focus();
+  };
+
+  const confirmarExclusao = (id, posicao) => {
+    focoAposExcluir.current = posicao;
+    onExcluir(id);
+    setConfirmando(null);
+  };
+
+  // Depois de excluir, o foco vai para o "Excluir" da linha que ocupou a
+  // posição da que saiu (ou da última, se a excluída era a última). Se a
+  // página ficou vazia, vai para a busca.
+  useEffect(() => {
+    if (focoAposExcluir.current === null) return;
+    const posicao = Math.min(focoAposExcluir.current, resultado.itens.length - 1);
+    focoAposExcluir.current = null;
+    const proxima = resultado.itens[posicao];
+    (proxima ? botoesExcluir.current[proxima.id] : document.getElementById("filtro-busca"))?.focus();
+  });
 
   return (
     <section data-testid="area-tabela">
@@ -164,15 +194,17 @@ export default function TabelaDefeitos({ defeitos, onAtualizarStatus, onExcluir 
         </button>
       </div>
 
-      {/* Contagem de resultados — a frase que os testes leem para saber o estado */}
-      <p style={{ fontSize: 13.5, color: COLORS.muted, margin: "0 0 10px" }} data-testid="contagem-resultados">
+      {/* Contagem de resultados — a frase que os testes leem para saber o estado.
+          É uma mensagem de status (WCAG 4.1.3): a cada filtro, o leitor de
+          tela anuncia quantos defeitos sobraram, sem tirar o foco da busca. */}
+      <p role="status" style={{ fontSize: 13.5, color: COLORS.muted, margin: "0 0 10px" }} data-testid="contagem-resultados">
         {resultado.total === 0
           ? "Nenhum defeito encontrado com os filtros atuais."
           : `Exibindo ${resultado.primeiroItem}–${resultado.ultimoItem} de ${resultado.total} defeito(s).`}
       </p>
 
       <div className="qa-card qa-tabela-wrap" style={{ padding: 4 }}>
-        <div className="qa-tabela-scroll">
+        <AreaRolavel className="qa-tabela-scroll" rotulo="Tabela de defeitos — use as setas para ver as outras colunas">
           <table className="qa-tabela" data-testid="tabela-defeitos">
             <caption className="qa-sr-only">Defeitos registrados no sistema fake do playground</caption>
             <thead>
@@ -199,7 +231,11 @@ export default function TabelaDefeitos({ defeitos, onAtualizarStatus, onExcluir 
                 <th scope="col">Ações</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody
+              onKeyDown={(e) => {
+                if (e.key === "Escape" && confirmando) fecharConfirmacao(confirmando);
+              }}
+            >
               {resultado.itens.length === 0 && (
                 <tr data-testid="linha-vazia">
                   <td colSpan={COLUNAS.length + 1} style={{ textAlign: "center", padding: "34px 12px", color: COLORS.muted }}>
@@ -208,7 +244,7 @@ export default function TabelaDefeitos({ defeitos, onAtualizarStatus, onExcluir 
                 </tr>
               )}
 
-              {resultado.itens.map((d) => (
+              {resultado.itens.map((d, posicao) => (
                 <React.Fragment key={d.id}>
                   <tr data-testid={`linha-${d.id}`}>
                     <td style={{ fontWeight: 700, color: COLORS.accentText, whiteSpace: "nowrap" }}>{d.id}</td>
@@ -236,10 +272,16 @@ export default function TabelaDefeitos({ defeitos, onAtualizarStatus, onExcluir 
                       {formatarDataBR(d.data)}
                     </td>
                     <td>
+                      {/* O nome diz QUAL defeito: pelo Tab, o leitor de tela
+                          só lê o botão, e oito "Excluir" iguais não dizem nada. */}
                       <button
                         type="button"
+                        ref={(el) => {
+                          botoesExcluir.current[d.id] = el;
+                        }}
                         className="qa-btn qa-btn-pequeno"
                         data-testid={`excluir-${d.id}`}
+                        aria-label={`Excluir ${d.id}`}
                         onClick={() => setConfirmando(confirmando === d.id ? null : d.id)}
                         aria-expanded={confirmando === d.id}
                         style={{ background: "transparent", color: COLORS.erro, boxShadow: `inset 0 0 0 1px ${COLORS.erro}` }}
@@ -261,11 +303,8 @@ export default function TabelaDefeitos({ defeitos, onAtualizarStatus, onExcluir 
                               type="button"
                               className="qa-btn qa-btn-pequeno"
                               data-testid={`confirmar-exclusao-${d.id}`}
-                              onClick={() => {
-                                onExcluir(d.id);
-                                setConfirmando(null);
-                              }}
-                              style={{ background: COLORS.erro, color: "#FFFFFF" }}
+                              onClick={() => confirmarExclusao(d.id, posicao)}
+                              style={{ background: COLORS.erro, color: COLORS.onErro }}
                             >
                               Confirmar exclusão
                             </button>
@@ -273,7 +312,7 @@ export default function TabelaDefeitos({ defeitos, onAtualizarStatus, onExcluir 
                               type="button"
                               className="qa-btn qa-btn-pequeno"
                               data-testid={`cancelar-exclusao-${d.id}`}
-                              onClick={() => setConfirmando(null)}
+                              onClick={() => fecharConfirmacao(d.id)}
                               style={{ background: "transparent", color: COLORS.text, boxShadow: `inset 0 0 0 1px ${COLORS.border}` }}
                             >
                               Cancelar
@@ -287,7 +326,7 @@ export default function TabelaDefeitos({ defeitos, onAtualizarStatus, onExcluir 
               ))}
             </tbody>
           </table>
-        </div>
+        </AreaRolavel>
       </div>
 
       {/* Dica de rolagem lateral — o CSS só a exibe em telas estreitas, onde a
@@ -322,7 +361,7 @@ export default function TabelaDefeitos({ defeitos, onAtualizarStatus, onExcluir 
               cursor: resultado.pagina <= 1 ? "not-allowed" : "pointer",
             }}
           >
-            ← Anterior
+            <span aria-hidden="true">←</span> Anterior
           </button>
           <button
             type="button"
@@ -336,7 +375,7 @@ export default function TabelaDefeitos({ defeitos, onAtualizarStatus, onExcluir 
               cursor: resultado.pagina >= resultado.totalPaginas ? "not-allowed" : "pointer",
             }}
           >
-            Próxima →
+            Próxima <span aria-hidden="true">→</span>
           </button>
         </span>
       </nav>

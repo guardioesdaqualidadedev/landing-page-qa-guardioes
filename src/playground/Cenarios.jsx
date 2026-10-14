@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { COLORS } from "../theme.js";
+import { TituloSecao } from "../components/Acessivel.jsx";
 import { CENARIOS } from "./cenarios.js";
 
 // Checklist de cenários. O estado fica em memória (nada de localStorage aqui —
@@ -24,9 +25,9 @@ export default function Cenarios() {
     <section data-testid="area-cenarios">
       <div className="qa-card" style={{ padding: "20px 22px", marginBottom: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
-          <h3 className="qa-display" style={{ fontSize: 24, fontWeight: 700, margin: 0, color: COLORS.text }}>
+          <TituloSecao className="qa-display" style={{ fontSize: 24, fontWeight: 700, margin: 0, color: COLORS.text }}>
             Progresso da sessão
-          </h3>
+          </TituloSecao>
           <span style={{ fontSize: 14, color: COLORS.muted }} data-testid="progresso-cenarios">
             {concluidos} de {CENARIOS.length} cenários · {percentual}%
           </span>

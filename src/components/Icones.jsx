@@ -49,14 +49,18 @@ export function IconeSocial({
 }) {
   const corBase = sobreFaixa ? COLORS.onBandBody : COLORS.muted;
   const fundoBase = sobreFaixa ? "rgba(255,255,255,.07)" : COLORS.surfaceAlt;
+  // Ícone sem texto: o nome inteiro vem do aria-label, inclusive o aviso de
+  // nova aba. O title repete o mesmo texto — igual ao nome, o navegador não o
+  // expõe como descrição e o leitor de tela não lê a frase duas vezes.
+  const nome = `${rotulo} (abre em nova aba)`;
 
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label={rotulo}
-      title={rotulo}
+      aria-label={nome}
+      title={nome}
       data-testid={testid || `social-${tipo}`}
       onClick={() => track(evento, { rede: tipo })}
       style={{

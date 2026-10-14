@@ -4,6 +4,11 @@ import { COLORS } from "../theme.js";
 // Botão que alterna entre os temas. Mostra o ícone e o NOME do modo para onde o
 // clique leva — sol/"Claro" quando está escuro, lua/"Escuro" quando está claro —
 // para não deixar dúvida sobre o que o botão faz.
+//
+// Sem aria-pressed: o rótulo já diz a ação ("Mudar para o tema claro"). Somar
+// os dois fazia o NVDA ler "Mudar para o tema claro, botão de alternância, não
+// pressionado" — e "não pressionado" ali não significa nada para quem ouve.
+// A confirmação da troca vem da região ao vivo em App.jsx.
 export default function ThemeToggle({ theme, onToggle, sobreFaixa = true }) {
   const escuro = theme === "dark";
   const destino = escuro ? "Claro" : "Escuro";
@@ -20,7 +25,6 @@ export default function ThemeToggle({ theme, onToggle, sobreFaixa = true }) {
       data-testid="theme-toggle"
       aria-label={rotulo}
       title={rotulo}
-      aria-pressed={!escuro}
       style={{
         display: "inline-flex",
         alignItems: "center",

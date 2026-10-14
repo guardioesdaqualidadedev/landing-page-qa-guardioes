@@ -15,7 +15,20 @@
     "deploy": "npm run build && firebase deploy --only hosting",
     "certificado": "node scripts/gerar-certificado.mjs",
     "test:all": "PW_DEMO=1 PW_RITMO=2.4 playwright test --workers=1 --headed",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "test:demo:prioridade": "PW_DEMO=1 PW_SLOWMO=1500 playwright test tests/e2e/leitor-prioridade.spec.js --project=chromium --workers=1 --headed",
+    "test:voz:prioridade": "FALAR=1 PASSO_MS=1500 playwright test -c playwright.acessibilidade.config.js tests/acessibilidade/03-nvda-simulado.spec.js -g \"Na prioridade\" --workers=1 --headed",
+    "test:acessibilidade": "playwright test -c playwright.acessibilidade.config.js",
+    "test:acessibilidade:ci": "AUDIO=0 PASSO_MS=0 playwright test -c playwright.acessibilidade.config.js",
+    "test:acessibilidade:producao": "BASE_URL=https://comunidade-qa-guardioes.web.app playwright test -c playwright.acessibilidade.config.js",
+    "test:wcag": "playwright test -c playwright.acessibilidade.config.js tests/acessibilidade/01-wcag-axe.spec.js",
+    "test:arvore": "playwright test -c playwright.acessibilidade.config.js tests/acessibilidade/02-arvore-acessibilidade.spec.js",
+    "test:nvda": "playwright test -c playwright.acessibilidade.config.js tests/acessibilidade/03-nvda-simulado.spec.js",
+    "test:teclado": "playwright test -c playwright.acessibilidade.config.js tests/acessibilidade/04-usabilidade-teclado.spec.js",
+    "test:shift-tab": "playwright test -c playwright.acessibilidade.config.js tests/acessibilidade/05-navegacao-reversa-shift-tab.spec.js",
+    "test:layout": "playwright test -c playwright.acessibilidade.config.js tests/acessibilidade/06-layout-responsivo.spec.js",
+    "test:ao-vivo": "FALAR=1 PASSO_MS=1200 playwright test -c playwright.acessibilidade.config.js tests/acessibilidade/03-nvda-simulado.spec.js --headed --workers=1",
+    "relatorio:acessibilidade": "playwright show-report playwright-report-acessibilidade"
   },
   "dependencies": {
     "firebase": "^12.15.0",
@@ -24,11 +37,14 @@
     "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@guidepup/virtual-screen-reader": "^0.33.0",
     "@playwright/test": "^1.49.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",
     "@vitejs/plugin-react": "^4.3.4",
+    "ffmpeg-static": "^5.3.0",
     "jsdom": "^25.0.1",
     "vite": "^6.0.3",
     "vitest": "^2.1.8"

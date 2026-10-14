@@ -41,7 +41,7 @@ test.describe("Landing page da comunidade", () => {
   test("mostra a governança com os quatro administradores", async ({ page }) => {
     const admins = page.getByTestId("admins");
     await expect(admins.locator("> *")).toHaveCount(4);
-    for (const nome of ["Douglas", "Camila", "Amanda", "Patrícia"]) {
+    for (const nome of ["Douglas", "Camila", "Gabriel", "Patrícia"]) {
       await expect(admins).toContainText(nome);
     }
   });
@@ -50,7 +50,7 @@ test.describe("Landing page da comunidade", () => {
     const esperado = {
       douglas: "douglas-adriano-queiroz",
       camila: "camila-lopes-ferreira",
-      amanda: "amanda-marino",
+      gabriel: "gabriel-rocc%C3%A0-32a978421",
       patricia: "patricia-silva-correa",
     };
 
@@ -62,8 +62,15 @@ test.describe("Landing page da comunidade", () => {
     }
   });
 
-  test("Amanda aparece como liderança de Design", async ({ page }) => {
-    await expect(page.getByTestId("admins")).toContainText("Liderança de Design");
+  test("Gabriel cuida dos grupos do WhatsApp", async ({ page }) => {
+    const cartao = page.getByTestId("admins").locator("> li").filter({ hasText: "Gabriel" });
+    await expect(cartao).toContainText("Administração do WhatsApp");
+    await expect(cartao).toContainText("acolhimento de quem entra");
+  });
+
+  test("Amanda, afastada temporariamente, não aparece na governança", async ({ page }) => {
+    await expect(page.getByTestId("admins")).not.toContainText("Amanda");
+    await expect(page.getByTestId("admin-linkedin-amanda")).toHaveCount(0);
   });
 
   test("o cabeçalho e o rodapé aparecem em todas as visitas", async ({ page }) => {
@@ -172,13 +179,15 @@ test.describe("Navegação pelo menu", () => {
     test.skip(!isMobile, "Só faz sentido na viewport de celular.");
     await page.goto("/");
 
-    await expect(page.getByTestId("menu-mobile")).toHaveCount(0);
+    // O menu fica sempre no DOM (o aria-controls do botão aponta para ele),
+    // escondido pelo atributo hidden enquanto está fechado.
+    await expect(page.getByTestId("menu-mobile")).toBeHidden();
     await page.getByTestId("menu-toggle").click();
     await expect(page.getByTestId("menu-mobile")).toBeVisible();
 
     await page.getByTestId("nav-manifesto-mobile").click();
     await expect(page).toHaveURL(/\/manifesto$/);
-    await expect(page.getByTestId("menu-mobile")).toHaveCount(0);
+    await expect(page.getByTestId("menu-mobile")).toBeHidden();
   });
 
   test("o logo do cabeçalho volta para a página inicial", async ({ page }) => {
@@ -398,17 +407,13 @@ test.describe("Landing — botões do hero", () => {
     await page.goto("/");
 
     // A ordem é uma decisão de produto: o Playground fecha a sequência, depois
-    // de a pessoa ter tido a chance de ler o Manifesto.
-    const rotulos = await page
-      .getByTestId("hero")
-      .getByRole("link", { includeHidden: false })
-      .filter({ hasText: /Discord|Manifesto|Playground/ })
-      .allInnerTexts();
-
-    expect(rotulos.map((t) => t.trim())).toEqual([
-      "Entrar no Discord →",
-      "Ler o Manifesto",
-      "▶ Abrir o Playground QA",
-    ]);
+    // de a pessoa ter tido a chance de ler o Manifesto. O nome comparado é o
+    // que o leitor de tela anuncia: as setas (→ ▶) são decorativas e ficam de
+    // fora, e o link do Discord avisa que abre em nova aba.
+    const botoes = page.getByTestId("hero").getByRole("link");
+    await expect(botoes).toHaveCount(3);
+    await expect(botoes.nth(0)).toHaveAccessibleName("Entrar no Discord (abre em nova aba)");
+    await expect(botoes.nth(1)).toHaveAccessibleName("Ler o Manifesto");
+    await expect(botoes.nth(2)).toHaveAccessibleName("Abrir o Playground QA");
   });
 });

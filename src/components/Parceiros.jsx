@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Reveal from "./Reveal.jsx";
 import SectionHeader from "./Section.jsx";
 import { Icone } from "./Icones.jsx";
+import { LinkExterno } from "./Acessivel.jsx";
 import { COLORS } from "../theme.js";
 import { track } from "../firebase.js";
 import { PARCEIROS } from "../content/comunidade.js";
@@ -20,83 +21,87 @@ import { PARCEIROS } from "../content/comunidade.js";
 // já os tira da ordem de Tab e da árvore de acessibilidade.
 // ─────────────────────────────────────────────────────────────────────────────
 
+// O slide (role="group") fica DENTRO do item da lista: com o papel no próprio
+// <li>, ele deixava de ser item e a lista passava a conter algo que não é item
+// — o leitor de tela perdia a contagem ("lista com 1 item").
 function CartaoParceiro({ parceiro, posicao, total, ativo }) {
   return (
     <li
       className="qa-card qa-parceiro"
-      role="group"
-      aria-roledescription="slide"
-      aria-label={`${posicao} de ${total}: ${parceiro.nome}`}
       aria-hidden={ativo ? undefined : "true"}
       data-testid={`parceiro-${parceiro.id}`}
       data-ativo={ativo ? "sim" : "nao"}
       style={{
         listStyle: "none",
-        padding: "30px 30px 26px",
         display: ativo ? "block" : "none",
       }}
     >
-      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 10, marginBottom: 6 }}>
-        <h3 className="qa-display" style={{ fontSize: 30, fontWeight: 700, margin: 0, color: COLORS.text }}>
-          {parceiro.nome}
-        </h3>
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: "0.16em",
-            textTransform: "uppercase",
-            color: COLORS.onAccent,
-            background: COLORS.accent,
-            borderRadius: 999,
-            padding: "4px 10px",
-          }}
-        >
-          Parceiro
-        </span>
-      </div>
-
-      <p
-        style={{
-          margin: "0 0 14px",
-          fontSize: 13.5,
-          fontWeight: 700,
-          letterSpacing: "0.06em",
-          textTransform: "uppercase",
-          color: COLORS.accentText,
-        }}
+      <div
+        role="group"
+        aria-roledescription="slide"
+        aria-label={`${posicao} de ${total}: ${parceiro.nome}`}
+        style={{ padding: "30px 30px 26px" }}
       >
-        {parceiro.chamada}
-      </p>
-
-      <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.66, color: COLORS.textSoft, maxWidth: 680 }}>
-        {parceiro.descricao}
-      </p>
-
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 22 }}>
-        {parceiro.links.map((l) => (
-          <a
-            key={l.tipo}
-            className="qa-btn qa-btn-pequeno qa-parceiro-link"
-            href={l.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-testid={`parceiro-${parceiro.id}-${l.tipo}`}
-            onClick={() => track("parceiro_link", { parceiro: parceiro.id, destino: l.tipo })}
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 10, marginBottom: 6 }}>
+          <h3 className="qa-display" style={{ fontSize: 30, fontWeight: 700, margin: 0, color: COLORS.text }}>
+            {parceiro.nome}
+          </h3>
+          <span
             style={{
-              gap: 8,
-              padding: "10px 16px",
-              fontSize: 13.5,
-              background: COLORS.surfaceAlt,
-              color: COLORS.text,
-              border: `1px solid ${COLORS.border}`,
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              color: COLORS.onAccent,
+              background: COLORS.accent,
+              borderRadius: 999,
+              padding: "4px 10px",
             }}
           >
-            {/* O ícone é decorativo: o rótulo do link já diz para onde vai. */}
-            <Icone tipo={l.tipo} tamanho={16} />
-            {l.rotulo}
-          </a>
-        ))}
+            Parceiro
+          </span>
+        </div>
+
+        <p
+          style={{
+            margin: "0 0 14px",
+            fontSize: 13.5,
+            fontWeight: 700,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            color: COLORS.accentText,
+          }}
+        >
+          {parceiro.chamada}
+        </p>
+
+        <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.66, color: COLORS.textSoft, maxWidth: 680 }}>
+          {parceiro.descricao}
+        </p>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 22 }}>
+          {parceiro.links.map((l) => (
+            <LinkExterno
+              key={l.tipo}
+              className="qa-btn qa-btn-pequeno qa-parceiro-link"
+              href={l.href}
+              data-testid={`parceiro-${parceiro.id}-${l.tipo}`}
+              onClick={() => track("parceiro_link", { parceiro: parceiro.id, destino: l.tipo })}
+              style={{
+                gap: 8,
+                padding: "10px 16px",
+                fontSize: 13.5,
+                background: COLORS.surfaceAlt,
+                color: COLORS.text,
+                border: `1px solid ${COLORS.border}`,
+              }}
+            >
+              {/* O ícone é decorativo: o rótulo do link já diz para onde vai. */}
+              <Icone tipo={l.tipo} tamanho={16} />
+              {l.rotulo}
+            </LinkExterno>
+          ))}
+        </div>
       </div>
     </li>
   );
@@ -180,10 +185,11 @@ export default function Parceiros() {
   if (total === 0) return null;
 
   return (
-    <section className="qa-wrap qa-section" id="parceiros" data-testid="secao-parceiros">
+    <section className="qa-wrap qa-section" id="parceiros" data-testid="secao-parceiros" aria-labelledby="parceiros-titulo">
       <SectionHeader
         eyebrow="Parceiros"
         titulo="Quem caminha junto com a comunidade"
+        tituloId="parceiros-titulo"
         apoio="Iniciativas que compartilham o mesmo propósito: abrir a porta da tecnologia para mais gente, sem cobrar por isso."
       />
 

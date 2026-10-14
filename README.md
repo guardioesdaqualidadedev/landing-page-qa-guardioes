@@ -42,6 +42,8 @@ máquina, inclusive em CI.
 | `npm run test:watch` | Testes unitários em modo observador |
 | `npm run test:e2e` | Testes de interface (Playwright) |
 | `npm run test:e2e:ui` | Playwright no modo interativo |
+| `npm run test:acessibilidade` | Suíte de acessibilidade: WCAG, NVDA simulado, teclado e layout (com vídeo) |
+| `npm run test:ao-vivo` | Só o NVDA simulado, com o navegador aberto e tudo narrado em voz alta |
 | `npm run deploy` | Build + deploy no Firebase Hosting |
 | `npm run certificado -- "Nome do Aluno"` | Gera o certificado de conclusão do playground em PDF |
 
@@ -49,7 +51,7 @@ máquina, inclusive em CI.
 
 ## Testes
 
-### Unitários — Vitest (95 testes)
+### Unitários — Vitest (113 testes)
 
 Cobrem a lógica pura e os componentes do playground:
 
@@ -66,7 +68,7 @@ Cobrem a lógica pura e os componentes do playground:
 npm test
 ```
 
-### Interface — Playwright (64 testes × 2 navegadores)
+### Interface — Playwright (113 testes × 2 navegadores)
 
 ```bash
 npx playwright install chromium   # só na primeira vez
@@ -81,9 +83,75 @@ sozinho antes da suíte — não é preciso deixar `npm run dev` em outro termin
 | `tests/e2e/landing.spec.js` | Landing page, alternância de tema com persistência, navegação pelo menu (desktop e celular), 404 e ausência de rolagem horizontal |
 | `tests/e2e/manifesto.spec.js` | Os quatro valores, os doze princípios, o manifesto original, o link externo e a hierarquia de cabeçalhos |
 | `tests/e2e/playground.spec.js` | Abas, validações do formulário (valor limite e partição), caminho feliz do registro, busca, filtros, ordenação, paginação, mudança de status, exclusão com confirmação e checklist de cenários |
+| `tests/e2e/acessibilidade-teclado.spec.js` | Tab de verdade: atalho de pular, ordem do foco (inclusive seção por seção na landing), Shift+Tab, foco visível, alvos de 24 px, menu do celular, abas com setas, grupo de prioridade e tabela |
+| `tests/e2e/leitor-prioridade.spec.js` | O campo Prioridade ouvido por um leitor de tela, do grupo ao registro (roteiro de demonstração: `npm run test:demo:prioridade`) |
 
 Todos os elementos interativos têm `data-testid` estável — use-os como
 seletores ao escrever os seus próprios testes.
+
+### Acessibilidade — Playwright + axe-core + NVDA simulado (68 cenários)
+
+Suíte em BDD (Dado / Quando / Então), no mesmo formato da do Projeto Garapuvu.
+Nasceu de dois defeitos relatados em outubro/2026: o Tab saía do botão "Abrir o
+Playground QA" direto para os cartões da governança, pulando seis seções, e havia
+dúvida se o Tab deveria passar por cada opção de prioridade.
+
+```bash
+npm run test:acessibilidade     # suíte completa contra o build local (faz o build e sobe o preview sozinho)
+npm run test:nvda               # só o leitor de tela simulado (com voz)
+npm run test:teclado            # Tab, foco visível, alvos de toque, menu do celular
+npm run test:ao-vivo            # navegador visível + tudo narrado nos alto-falantes (bom para aula)
+npm run test:acessibilidade:ci  # sem voz e sem pausas (para CI)
+npm run test:acessibilidade:producao   # mesma suíte contra o site publicado
+npm run relatorio:acessibilidade       # abre o relatório HTML
+```
+
+| Arquivo | O que verifica |
+| --- | --- |
+| `01-wcag-axe` | WCAG 2.2 A e AA com o axe-core: as três telas, os dois temas, cada aba do Playground, formulário com erros, confirmação de exclusão, menu do celular e 404 |
+| `02-arvore-acessibilidade` | Regiões (tecla D), hierarquia de títulos em todas as telas, nome de todo controle, aviso de nova aba, grupo Prioridade, título da aba por tela, símbolos decorativos fora da árvore, equipe atual da governança |
+| `03-nvda-simulado` | Leitura com a seta, teclas H e D, o Tab seção por seção, os administradores, a prioridade com as setas, o resumo de erros, abas, busca, exclusão pelo teclado, troca de tema, troca de tela e atalho de pular |
+| `04-usabilidade-teclado` | Ordem do Tab no topo, na página e no formulário; grupo de prioridade; padrão de abas; contorno de foco com 3:1 de contraste nos dois temas; alvos de 24×24 px; menu do celular; links do rodapé que levam o foco ao destino |
+| `05-navegacao-reversa-shift-tab` | O Shift+Tab é o espelho exato do Tab em cada tela, e continua do lugar certo depois do atalho de pular, da troca de tema e da confirmação de exclusão |
+| `06-layout-responsivo` | 320 px (zoom de 400%) a 1920 px sem rolagem horizontal, tabelas que rolam pelo teclado no celular e espaçamento de texto da WCAG 1.4.12 |
+
+Cada cenário gera um vídeo em `tests/acessibilidade/videos/<arquivo>/<cenário>.mp4`
+(os que falham ganham o prefixo `[FALHOU]`), com a funcionalidade, os passos BDD
+atualizados em tempo real, o **visualizador de fala** do NVDA simulado e o painel
+**foco do teclado**. Nos cenários de leitor de tela, o vídeo tem a voz do macOS
+(`say`, voz Luciana) no instante em que cada frase foi dita.
+
+| Variável | Efeito |
+| --- | --- |
+| `BASE_URL` | site a testar (padrão: build local em `http://localhost:4173`) |
+| `AUDIO=0` | desliga a voz |
+| `FALAR=1` | modo ao vivo: toca as vozes nos alto-falantes e narra cenários, passos e paradas do foco |
+| `VOZ` / `VOZ_NARRADOR` | vozes do leitor de tela (padrão: Luciana) e do narrador (padrão: Eddy) |
+| `VELOCIDADE` | palavras por minuto das duas vozes (padrão: 210) |
+| `PASSO_MS` | pausa entre passos, para o vídeo ficar legível (padrão: 600; use 0 em CI) |
+
+**Como funciona o "NVDA simulado".** O NVDA só roda no Windows; aqui quem fala é o
+[Virtual Screen Reader da Guidepup](https://github.com/guidepup/virtual-screen-reader),
+que percorre a mesma árvore de acessibilidade que o Chromium entrega ao NVDA. As
+asserções usam as frases originais dele; a legenda e a voz mostram uma tradução no
+estilo do NVDA, que é uma aproximação. Uma única correção é aplicada: ele lê a
+marcação de rádios e caixas de seleção pelo *atributo* `checked`, que não muda quando
+a pessoa marca a opção — o NVDA de verdade lê o estado atual, então a suíte usa o
+estado do elemento nessas frases.
+
+**O grupo Prioridade é uma parada só do Tab — e isso é o correto.** Em todo
+navegador, o Tab entra no grupo de rádio pela opção marcada (ou pela primeira), as
+setas trocam e marcam a opção e o próximo Tab segue para o campo seguinte. É o
+padrão do HTML e do WAI-ARIA, e o NVDA anuncia "1 de 3" justamente para avisar que
+as outras opções estão nas setas. O que faltava era dizer isso a quem enxerga: a
+instrução agora aparece abaixo de "Prioridade" e é lida em cada opção.
+
+> Com o navegador visível, clicar na janela para trazê-la para frente tirava o foco
+> do lugar e reprovava o cenário de teclado. A suíte neutraliza o clique em texto e
+> fundo (campos, botões e links continuam respondendo ao mouse normalmente).
+>
+> Esta suíte não substitui o teste com o NVDA de verdade e com quem usa leitor de
+> tela no dia a dia: ela garante que o que já foi corrigido continue corrigido.
 
 ---
 
@@ -202,7 +270,8 @@ src/
 │   ├── Parceiros.jsx        Carrossel de parceiros da comunidade
 │   ├── ThemeToggle.jsx      Botão claro/escuro
 │   ├── OrbitBackground.jsx  Fundo decorativo em SVG (órbitas e escudo)
-│   ├── Section.jsx          Cabeçalho padrão de seção
+│   ├── Section.jsx          Cabeçalho padrão de seção (o título é parada do Tab)
+│   ├── Acessivel.jsx        Link externo com aviso, título de seção focável, área com rolagem
 │   └── Reveal.jsx           Animação de entrada respeitando reduced-motion
 ├── content/
 │   ├── comunidade.js        Conteúdo da landing, extraído do documento oficial
@@ -333,15 +402,26 @@ firebase deploy --only firestore:rules
 
 O que já está coberto e é verificado pelos testes:
 
-- Campos com `aria-invalid` e mensagem de erro ligada por `aria-describedby`
-- Foco levado ao primeiro campo com erro no envio
-- Grupo de rádios em `fieldset`/`legend`
-- Colunas ordenáveis com `aria-sort`
-- Abas com `role="tablist"`, `aria-selected` e `aria-controls`
-- Link "Pular para o conteúdo" e foco visível em todos os controles
+- Cada seção é uma região com nome (tecla D do NVDA) e o título dela é uma parada
+  do Tab: o teclado percorre a página seção por seção, na ordem da tela
+- Campos com `aria-invalid` e mensagem de erro ligada por `aria-describedby`;
+  um resumo em região `role="alert"` anuncia quantos campos faltam
+- Foco levado ao primeiro campo com erro no envio, na ordem em que aparecem na tela
+- Grupo de rádios em `fieldset`/`legend`, com a instrução das setas visível e lida
+  em cada opção
+- Colunas ordenáveis com `aria-sort`; contagem de resultados anunciada a cada filtro
+- Abas com `role="tablist"`, setas, Home e End, e só a aba ativa no caminho do Tab
+- Link "Pular para o conteúdo"; ao trocar de tela, o título da aba muda e o foco
+  vai para o título da tela nova
+- Foco visível em todos os controles, com 3:1 de contraste nos dois temas
+  (`--qa-foco` muda conforme o fundo); laranja de texto com 4,5:1 no tema claro
+- Links que abrem nova aba avisam no nome acessível; setas e símbolos decorativos
+  ficam fora do leitor de tela
+- Menu do celular fecha com Esc e devolve o foco ao botão; confirmação de exclusão
+  fecha com Esc, e excluir leva o foco para a linha seguinte
 - Confirmação de exclusão dentro da página, sem `window.confirm` — diálogo
   nativo trava a automação e não é estilizável
-- `prefers-reduced-motion` respeitado nas animações de entrada
+- `prefers-reduced-motion` respeitado: sem animação de entrada, sem transições
 
 ---
 

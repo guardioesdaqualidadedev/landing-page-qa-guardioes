@@ -6,6 +6,11 @@ import { COLORS } from "../theme.js";
 // A mensagem de erro é ligada ao controle por `aria-describedby` e o campo
 // inválido recebe `aria-invalid` — é o que permite testar acessibilidade de
 // verdade, e não só a cor vermelha.
+//
+// A mensagem NÃO é um role="alert": no envio vazio seriam dez alertas de uma
+// vez, atropelando o resumo de erros e o anúncio do campo que recebe o foco.
+// Quem avisa é o resumo; a mensagem de cada campo é lida quando o foco chega
+// nele ("Título do defeito, edição, inválido, Informe o título do defeito").
 export default function Campo({ id, rotulo, obrigatorio, erro, dica, children }) {
   const idErro = `${id}-erro`;
   const idDica = `${id}-dica`;
@@ -16,7 +21,7 @@ export default function Campo({ id, rotulo, obrigatorio, erro, dica, children })
       <label className="qa-label" htmlFor={id}>
         {rotulo}
         {obrigatorio && (
-          <span aria-hidden="true" style={{ color: COLORS.accent, marginLeft: 4 }}>
+          <span aria-hidden="true" style={{ color: COLORS.accentText, marginLeft: 4 }}>
             *
           </span>
         )}
@@ -34,7 +39,7 @@ export default function Campo({ id, rotulo, obrigatorio, erro, dica, children })
         </span>
       )}
       {erro && (
-        <span className="qa-erro" id={idErro} role="alert" data-testid={`${id}-erro`}>
+        <span className="qa-erro" id={idErro} data-testid={`${id}-erro`}>
           {erro}
         </span>
       )}

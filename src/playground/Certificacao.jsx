@@ -19,6 +19,7 @@ import {
   CARGA_HORARIA,
 } from "../content/certificacao.js";
 import { track } from "../firebase.js";
+import { AreaRolavel, LinkExterno, TituloSecao } from "../components/Acessivel.jsx";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Aba "Certificado" — o passo a passo entre praticar no playground e receber o
@@ -107,7 +108,7 @@ function Etiqueta({ children, cor = COLORS.accentText, fundo = COLORS.accentSoft
 
 // Bloco de texto monoespaçado com botão de cópia. É como o modelo do documento
 // e a árvore de pastas chegam ao aluno: um clique e está no Word.
-function BlocoCopiavel({ texto, testid, rotuloBotao = "Copiar", evento }) {
+function BlocoCopiavel({ texto, testid, rotuloBotao = "Copiar", rotuloArea, evento }) {
   const [copiado, setCopiado] = useState(false);
 
   const copiar = async () => {
@@ -139,9 +140,22 @@ function BlocoCopiavel({ texto, testid, rotuloBotao = "Copiar", evento }) {
           color: COLORS.onAccent,
         }}
       >
-        {copiado ? "✓ Copiado" : rotuloBotao}
+        {copiado ? (
+          <>
+            <span aria-hidden="true">✓</span> Copiado
+          </>
+        ) : (
+          rotuloBotao
+        )}
       </button>
-      <pre
+      {/* O texto do botão muda, mas o leitor de tela não relê um botão que já
+          está focado: a confirmação vem por esta região ao vivo. */}
+      <span className="qa-sr-only" role="status">
+        {copiado ? "Copiado para a área de transferência." : ""}
+      </span>
+      <AreaRolavel
+        as="pre"
+        rotulo={rotuloArea}
         data-testid={testid}
         style={{
           margin: 0,
@@ -160,7 +174,7 @@ function BlocoCopiavel({ texto, testid, rotuloBotao = "Copiar", evento }) {
         }}
       >
         {texto}
-      </pre>
+      </AreaRolavel>
     </div>
   );
 }
@@ -178,12 +192,12 @@ export default function Certificacao() {
         }}
       >
         <Etiqueta>Certificado da comunidade</Etiqueta>
-        <h3
+        <TituloSecao
           className="qa-display"
           style={{ fontSize: 27, fontWeight: 700, margin: "12px 0 10px", color: COLORS.text, lineHeight: 1.2 }}
         >
           Complete os 12 desafios e receba seu certificado
-        </h3>
+        </TituloSecao>
         <Paragrafo style={{ maxWidth: 780, fontSize: 15.5 }}>
           Quem executa os {CENARIOS.length} cenários desta página, documenta cada um no padrão
           abaixo e envia os vídeos das execuções recebe um certificado de conclusão em PDF
@@ -252,9 +266,9 @@ export default function Certificacao() {
                 {e.n}
               </span>
               <div>
-                <h4 style={{ fontSize: 16.5, fontWeight: 700, color: COLORS.text, margin: "5px 0 4px", lineHeight: 1.35 }}>
+                <h3 style={{ fontSize: 16.5, fontWeight: 700, color: COLORS.text, margin: "5px 0 4px", lineHeight: 1.35 }}>
                   {e.titulo}
-                </h4>
+                </h3>
                 <p style={{ fontSize: 13.5, color: COLORS.accentText, margin: "0 0 9px", fontWeight: 600 }}>{e.resumo}</p>
                 <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 6 }}>
                   {e.detalhes.map((d) => (
@@ -289,9 +303,9 @@ export default function Certificacao() {
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
-                <h4 className="qa-display" style={{ fontSize: 19, fontWeight: 700, color: COLORS.text, margin: 0 }}>
+                <h3 className="qa-display" style={{ fontSize: 19, fontWeight: 700, color: COLORS.text, margin: 0 }}>
                   Aba “{a.rotulo}”
-                </h4>
+                </h3>
                 {a.cenarios.length > 0 && (
                   <Etiqueta>
                     {a.cenarios.length} {a.cenarios.length === 1 ? "cenário" : "cenários"}
@@ -345,9 +359,9 @@ export default function Certificacao() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
-              <h4 className="qa-display" style={{ fontSize: 19, fontWeight: 700, color: COLORS.text, margin: 0 }}>
+              <h3 className="qa-display" style={{ fontSize: 19, fontWeight: 700, color: COLORS.text, margin: 0 }}>
                 Botão “{BOTAO_RESTAURAR.rotulo}”
-              </h4>
+              </h3>
               <Etiqueta>Use antes de cada cenário</Etiqueta>
             </div>
             <Paragrafo style={{ marginBottom: 10 }}>{BOTAO_RESTAURAR.oQueFaz}</Paragrafo>
@@ -374,10 +388,10 @@ export default function Certificacao() {
           no primeiro emprego, e é o que permite outra pessoa repetir o que você fez.
         </Paragrafo>
 
-        <h4 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "22px 0 12px" }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "22px 0 12px" }}>
           Cabeçalho do documento
-        </h4>
-        <div className="qa-tabela-wrap" style={{ overflowX: "auto" }}>
+        </h3>
+        <AreaRolavel className="qa-tabela-wrap" style={{ overflowX: "auto" }} rotulo="Cabeçalho do documento — use as setas para ver as outras colunas">
           <table className="qa-tabela" data-testid="tabela-cabecalho">
             <thead>
               <tr>
@@ -394,12 +408,12 @@ export default function Certificacao() {
               ))}
             </tbody>
           </table>
-        </div>
+        </AreaRolavel>
 
-        <h4 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "26px 0 12px" }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "26px 0 12px" }}>
           Os campos de cada caso de teste
-        </h4>
-        <div className="qa-tabela-wrap" style={{ overflowX: "auto" }}>
+        </h3>
+        <AreaRolavel className="qa-tabela-wrap" style={{ overflowX: "auto" }} rotulo="Campos de cada caso de teste — use as setas para ver as outras colunas">
           <table className="qa-tabela" data-testid="tabela-campos-caso">
             <thead>
               <tr>
@@ -423,11 +437,11 @@ export default function Certificacao() {
               ))}
             </tbody>
           </table>
-        </div>
+        </AreaRolavel>
 
-        <h4 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "26px 0 6px" }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "26px 0 6px" }}>
           Modelo pronto — copie e cole no Word
-        </h4>
+        </h3>
         <Paragrafo>
           Clique em copiar, cole no Word ou no Google Docs e preencha. O primeiro caso já vem
           preenchido como exemplo; repita o bloco até o CT-12, seguindo a ordem da aba
@@ -437,6 +451,7 @@ export default function Certificacao() {
           texto={MODELO_DOCUMENTO}
           testid="modelo-documento"
           rotuloBotao="Copiar modelo"
+          rotuloArea="Modelo do documento de casos de teste"
           evento="certificacao_copiar_modelo"
         />
       </Bloco>
@@ -448,9 +463,9 @@ export default function Certificacao() {
         titulo="Como gravar as evidências em vídeo"
         resumo="Um vídeo por caso, começando na massa restaurada e terminando no resultado."
       >
-        <h4 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "0 0 12px" }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "0 0 12px" }}>
           Com o que gravar
-        </h4>
+        </h3>
         <div className="qa-grid2" style={{ display: "grid", gap: 10, marginBottom: 24 }} data-testid="ferramentas-gravacao">
           {COMO_GRAVAR.ferramentas.map((f) => (
             <div
@@ -463,9 +478,9 @@ export default function Certificacao() {
           ))}
         </div>
 
-        <h4 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "0 0 12px" }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "0 0 12px" }}>
           As regras da gravação
-        </h4>
+        </h3>
         <ol style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 12 }} data-testid="regras-gravacao">
           {COMO_GRAVAR.regras.map((r, i) => (
             <li key={r.titulo} style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 13, alignItems: "start" }}>
@@ -500,20 +515,21 @@ export default function Certificacao() {
         titulo="Como organizar e compartilhar no Google Drive"
         resumo="A estrutura de pastas, a permissão certa e para quem enviar o link."
       >
-        <h4 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "0 0 6px" }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "0 0 6px" }}>
           A estrutura da pasta
-        </h4>
+        </h3>
         <Paragrafo>Troque o nome de exemplo pelo seu nome completo — o mesmo que vai sair no certificado.</Paragrafo>
         <BlocoCopiavel
           texto={ESTRUTURA_DRIVE}
           testid="estrutura-drive"
           rotuloBotao="Copiar estrutura"
+          rotuloArea="Estrutura de pastas no Google Drive"
           evento="certificacao_copiar_estrutura"
         />
 
-        <h4 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "26px 0 12px" }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "26px 0 12px" }}>
           Compartilhando o link
-        </h4>
+        </h3>
         <ol style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 9 }} data-testid="passos-compartilhamento">
           {PASSOS_COMPARTILHAMENTO.map((p) => (
             <li key={p} style={{ fontSize: 14.5, lineHeight: 1.7, color: COLORS.textSoft }}>
@@ -539,26 +555,22 @@ export default function Certificacao() {
             jeito que deve sair impresso. A revisão é do Douglas e sai em até {PRAZO_VALIDACAO}.
           </Paragrafo>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <a
+            <LinkExterno
               className="qa-btn qa-btn-primario"
               href={LINKS.discord}
-              target="_blank"
-              rel="noopener noreferrer"
               data-testid="enviar-discord"
               onClick={() => track("certificacao_enviar_discord")}
             >
               Enviar pelo Discord
-            </a>
-            <a
+            </LinkExterno>
+            <LinkExterno
               className="qa-btn"
               href={LINKS.whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
               data-testid="enviar-whatsapp"
               style={{ background: COLORS.surfaceAlt, color: COLORS.text, boxShadow: `inset 0 0 0 1px ${COLORS.border}` }}
             >
               Enviar pelo WhatsApp
-            </a>
+            </LinkExterno>
           </div>
         </div>
       </Bloco>
@@ -570,9 +582,9 @@ export default function Certificacao() {
         titulo="O que é conferido na validação"
         resumo="Os critérios da revisão — e o que definitivamente não reprova ninguém."
       >
-        <h4 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "0 0 12px" }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: COLORS.text, margin: "0 0 12px" }}>
           O que o Douglas confere
-        </h4>
+        </h3>
         <ul style={{ margin: "0 0 26px", padding: 0, listStyle: "none", display: "grid", gap: 10 }} data-testid="criterios-validacao">
           {CRITERIOS_VALIDACAO.map((c) => (
             <li key={c.criterio} style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 12, alignItems: "start" }}>
@@ -621,25 +633,21 @@ export default function Certificacao() {
           oficial é gratuito e está em português pelo {SYLLABUS.boardBr}.
         </Paragrafo>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 16 }}>
-          <a
+          <LinkExterno
             className="qa-btn qa-btn-primario"
             href={SYLLABUS.links.pdfPt}
-            target="_blank"
-            rel="noopener noreferrer"
             data-testid="syllabus-pdf-playground"
             onClick={() => track("syllabus_download", { origem: "playground" })}
           >
             Baixar o syllabus em PDF
-          </a>
-          <a
+          </LinkExterno>
+          <LinkExterno
             className="qa-btn"
             href={SYLLABUS.links.oficial}
-            target="_blank"
-            rel="noopener noreferrer"
             style={{ background: COLORS.surfaceAlt, color: COLORS.text, boxShadow: `inset 0 0 0 1px ${COLORS.border}` }}
           >
             Página oficial do ISTQB
-          </a>
+          </LinkExterno>
         </div>
       </Bloco>
     </section>

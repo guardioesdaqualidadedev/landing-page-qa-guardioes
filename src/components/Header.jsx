@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import BrandMark from "./BrandMark.jsx";
 import ThemeToggle from "./ThemeToggle.jsx";
@@ -15,6 +15,7 @@ const MENU = [
 
 export default function Header({ theme, onToggleTheme }) {
   const [aberto, setAberto] = useState(false);
+  const botaoMenu = useRef(null);
   const { pathname } = useLocation();
 
   // Fecha o menu do celular a cada troca de rota — senão ele fica aberto por
@@ -22,6 +23,19 @@ export default function Header({ theme, onToggleTheme }) {
   useEffect(() => {
     setAberto(false);
   }, [pathname]);
+
+  // Esc fecha o menu e devolve o foco ao botão que o abriu: é o que quem usa
+  // teclado ou leitor de tela espera de qualquer coisa que se abre por cima.
+  useEffect(() => {
+    if (!aberto) return undefined;
+    const aoTeclar = (e) => {
+      if (e.key !== "Escape") return;
+      setAberto(false);
+      botaoMenu.current?.focus();
+    };
+    document.addEventListener("keydown", aoTeclar);
+    return () => document.removeEventListener("keydown", aoTeclar);
+  }, [aberto]);
 
   const linkEstilo = ({ isActive }) => ({
     position: "relative",
@@ -40,6 +54,7 @@ export default function Header({ theme, onToggleTheme }) {
   return (
     <header
       data-testid="site-header"
+      className="qa-faixa"
       style={{
         position: "sticky",
         top: 0,
@@ -75,7 +90,14 @@ export default function Header({ theme, onToggleTheme }) {
         className="qa-wrap"
         style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, minHeight: 72 }}
       >
-        <NavLink to="/" aria-label="Ir para a página inicial" style={{ textDecoration: "none" }} data-testid="brand-link">
+        {/* O nome começa pelo que está escrito na marca (WCAG 2.5.3): quem usa
+            comando de voz diz "clicar em QA Guardiões" e o link responde. */}
+        <NavLink
+          to="/"
+          aria-label="QA Guardiões — Qualidade de Software, página inicial"
+          style={{ textDecoration: "none" }}
+          data-testid="brand-link"
+        >
           <BrandMark tamanho={42} sobreFaixa />
         </NavLink>
 
@@ -111,13 +133,17 @@ export default function Header({ theme, onToggleTheme }) {
 
           <ThemeToggle theme={theme} onToggle={onToggleTheme} sobreFaixa />
 
+          {/* Rótulo fixo: quem diz se o menu está aberto é o aria-expanded
+              ("expandido" / "recolhido"). Trocar o rótulo junto fazia o leitor
+              anunciar o estado duas vezes, e de formas diferentes. */}
           <button
             type="button"
+            ref={botaoMenu}
             className="qa-nav-mobile"
             data-testid="menu-toggle"
             aria-expanded={aberto}
             aria-controls="menu-mobile"
-            aria-label={aberto ? "Fechar menu" : "Abrir menu"}
+            aria-label="Menu de navegação"
             onClick={() => setAberto((v) => !v)}
             style={{
               alignItems: "center",
@@ -138,47 +164,48 @@ export default function Header({ theme, onToggleTheme }) {
         </div>
       </div>
 
-      {/* Menu do celular */}
-      {aberto && (
-        <nav
-          id="menu-mobile"
-          data-testid="menu-mobile"
-          aria-label="Navegação principal"
-          className="qa-nav-mobile"
-          style={{
-            display: "block",
-            borderTop: "1px solid rgba(255,255,255,.12)",
-            background: COLORS.band,
-            padding: "10px 18px 18px",
-          }}
-        >
-          {MENU.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === "/"}
-              data-testid={`${item.testid}-mobile`}
-              style={({ isActive }) => ({
-                display: "block",
-                padding: "13px 4px",
-                fontSize: 16,
-                fontWeight: 600,
-                textDecoration: "none",
-                color: isActive ? COLORS.accent : COLORS.onBand,
-                borderBottom: "1px solid rgba(255,255,255,.08)",
-              })}
-            >
-              {item.rotulo}
-            </NavLink>
-          ))}
-          <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-            <IconeSocial tipo="discord" href={LINKS.discord} rotulo="Servidor no Discord" evento="header_social" sobreFaixa />
-            <IconeSocial tipo="whatsapp" href={LINKS.whatsapp} rotulo="Comunidade no WhatsApp" evento="header_social" sobreFaixa />
-            <IconeSocial tipo="linkedin" href={LINKS.linkedin} rotulo="Página no LinkedIn" evento="header_social" sobreFaixa />
-            <IconeSocial tipo="github" href={LINKS.github} rotulo="Código da comunidade no GitHub" evento="header_social" sobreFaixa />
-          </div>
-        </nav>
-      )}
+      {/* Menu do celular. Fica sempre no DOM — o aria-controls do botão aponta
+          para ele — e o atributo hidden o tira da tela, do Tab e da árvore de
+          acessibilidade enquanto está fechado. */}
+      <nav
+        id="menu-mobile"
+        data-testid="menu-mobile"
+        aria-label="Navegação principal"
+        className="qa-nav-mobile"
+        hidden={!aberto}
+        style={{
+          display: "block",
+          borderTop: "1px solid rgba(255,255,255,.12)",
+          background: COLORS.band,
+          padding: "10px 18px 18px",
+        }}
+      >
+        {MENU.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === "/"}
+            data-testid={`${item.testid}-mobile`}
+            style={({ isActive }) => ({
+              display: "block",
+              padding: "13px 4px",
+              fontSize: 16,
+              fontWeight: 600,
+              textDecoration: "none",
+              color: isActive ? COLORS.accent : COLORS.onBand,
+              borderBottom: "1px solid rgba(255,255,255,.08)",
+            })}
+          >
+            {item.rotulo}
+          </NavLink>
+        ))}
+        <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+          <IconeSocial tipo="discord" href={LINKS.discord} rotulo="Servidor no Discord" evento="header_social" sobreFaixa />
+          <IconeSocial tipo="whatsapp" href={LINKS.whatsapp} rotulo="Comunidade no WhatsApp" evento="header_social" sobreFaixa />
+          <IconeSocial tipo="linkedin" href={LINKS.linkedin} rotulo="Página no LinkedIn" evento="header_social" sobreFaixa />
+          <IconeSocial tipo="github" href={LINKS.github} rotulo="Código da comunidade no GitHub" evento="header_social" sobreFaixa />
+        </div>
+      </nav>
     </header>
   );
 }

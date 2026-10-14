@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Campo from "./Campo.jsx";
+import { TituloSecao } from "../components/Acessivel.jsx";
 import { COLORS } from "../theme.js";
 import { SEVERIDADES, PRIORIDADES, AMBIENTES, MODULOS } from "./dominio.js";
 import { validarDefeito, LIMITES } from "./validacao.js";
@@ -17,6 +18,15 @@ export const VALORES_INICIAIS = {
   passos: "",
   aceite: false,
 };
+
+// Os campos na ordem em que aparecem na tela. É por ela que o foco escolhe o
+// primeiro erro depois do envio — a ordem da validação é outra (prioridade
+// vem antes de ambiente), e o foco pulava para baixo, por cima de um campo
+// inválido que estava mais acima.
+const ORDEM_NA_TELA = ["titulo", "modulo", "severidade", "ambiente", "reporter", "data", "ocorrencias", "prioridade", "passos", "aceite"];
+
+// Descrição de cada prioridade, depois do código ("P1 · imediata").
+const DESCRICAO_PRIORIDADE = { P1: "imediata", P2: "próxima sprint", P3: "backlog" };
 
 // Hoje em ISO (aaaa-mm-dd), que é o único formato aceito nos atributos `min` e
 // `max` do <input type="date"> — independente do que ele MOSTRA na tela.
@@ -56,10 +66,9 @@ export default function FormularioDefeito({ onRegistrar }) {
     const achados = validarDefeito(valores);
     setErros(achados);
 
-    const chaves = Object.keys(achados);
-    if (chaves.length > 0) {
-      const alvo = document.getElementById(`campo-${chaves[0]}`);
-      alvo?.focus();
+    const primeiroErro = ORDEM_NA_TELA.find((campo) => achados[campo]);
+    if (primeiroErro) {
+      document.getElementById(`campo-${primeiroErro}`)?.focus();
       return;
     }
 
@@ -84,36 +93,46 @@ export default function FormularioDefeito({ onRegistrar }) {
   const totalErros = Object.keys(erros).length;
 
   return (
-    <form onSubmit={enviar} noValidate data-testid="formulario-defeito" className="qa-card" style={{ padding: "26px 26px 24px" }}>
-      <h3 className="qa-display" style={{ fontSize: 26, fontWeight: 700, margin: "0 0 4px", color: COLORS.text }}>
+    <form
+      onSubmit={enviar}
+      noValidate
+      data-testid="formulario-defeito"
+      aria-labelledby="formulario-titulo"
+      className="qa-card"
+      style={{ padding: "26px 26px 24px" }}
+    >
+      <TituloSecao id="formulario-titulo" className="qa-display" style={{ fontSize: 26, fontWeight: 700, margin: "0 0 4px", color: COLORS.text }}>
         Registrar defeito
-      </h3>
+      </TituloSecao>
       <p style={{ fontSize: 14, color: COLORS.muted, margin: "0 0 22px", lineHeight: 1.55 }}>
-        Todos os campos marcados com <span style={{ color: COLORS.accent }}>*</span> são obrigatórios.
+        Todos os campos marcados com <span style={{ color: COLORS.accentText }}>*</span> são obrigatórios.
         As regras de validação estão descritas nos cenários da aba ao lado.
       </p>
 
-      {/* Resumo de erros — o "sumário de validação" que leitores de tela anunciam */}
-      {enviado && totalErros > 0 && (
-        <div
-          role="alert"
-          data-testid="resumo-erros"
-          style={{
-            marginBottom: 20,
-            padding: "12px 16px",
-            borderRadius: 10,
-            background: "rgba(255,107,107,.12)",
-            borderLeft: `4px solid ${COLORS.erro}`,
-            color: COLORS.erro,
-            fontSize: 14,
-            fontWeight: 600,
-          }}
-        >
-          {totalErros === 1
-            ? "1 campo precisa de atenção antes de registrar."
-            : `${totalErros} campos precisam de atenção antes de registrar.`}
-        </div>
-      )}
+      {/* Resumo de erros — o "sumário de validação" que leitores de tela anunciam.
+          A região role="alert" existe desde o início e só o conteúdo muda: um
+          alerta que já nasce com o texto nem sempre é anunciado. */}
+      <div role="alert" data-testid="regiao-erros">
+        {enviado && totalErros > 0 && (
+          <div
+            data-testid="resumo-erros"
+            style={{
+              marginBottom: 20,
+              padding: "12px 16px",
+              borderRadius: 10,
+              background: "rgba(255,107,107,.12)",
+              borderLeft: `4px solid ${COLORS.erro}`,
+              color: COLORS.erro,
+              fontSize: 14,
+              fontWeight: 600,
+            }}
+          >
+            {totalErros === 1
+              ? "1 campo precisa de atenção antes de registrar."
+              : `${totalErros} campos precisam de atenção antes de registrar.`}
+          </div>
+        )}
+      </div>
 
       <div className="qa-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
         <div style={{ gridColumn: "1 / -1" }}>
@@ -236,18 +255,32 @@ export default function FormularioDefeito({ onRegistrar }) {
         </Campo>
 
         {/* Prioridade em rádio: o grupo precisa de fieldset/legend para ser
-            anunciado corretamente por leitores de tela. */}
+            anunciado corretamente por leitores de tela.
+
+            Grupo de rádio é UMA parada do Tab: o Tab entra na opção marcada
+            (ou na primeira, se nenhuma estiver), as setas trocam a opção e o
+            próximo Tab segue para o campo seguinte. É o comportamento nativo
+            do HTML e o que o NVDA anuncia ("1 de 3") — quem usa leitor de tela
+            espera as setas aqui. O que faltava era dizer isso a quem enxerga:
+            a dica abaixo fica visível e é lida em cada opção. */}
         <fieldset
           style={{ gridColumn: "1 / -1", border: "none", padding: 0, margin: 0 }}
           data-testid="grupo-prioridade"
-          aria-describedby={erros.prioridade ? "campo-prioridade-erro" : undefined}
         >
-          <legend className="qa-label" style={{ padding: 0, marginBottom: 8 }}>
-            Prioridade <span aria-hidden="true" style={{ color: COLORS.accent }}>*</span>
+          <legend className="qa-label" style={{ padding: 0, marginBottom: 4 }}>
+            Prioridade <span aria-hidden="true" style={{ color: COLORS.accentText }}>*</span>
           </legend>
+          <p className="qa-hint" id="campo-prioridade-dica" data-testid="dica-prioridade" style={{ margin: "0 0 10px" }}>
+            Use as setas do teclado para escolher a prioridade. O Tab segue para o próximo campo.
+          </p>
           <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
             {PRIORIDADES.map((p, i) => (
-              <label key={p} style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 14.5, color: COLORS.textSoft, cursor: "pointer" }}>
+              // minHeight: o rótulo inteiro marca a opção, e é ele o alvo do
+              // clique — com 24 px de altura, cumpre o tamanho mínimo da WCAG 2.5.8.
+              <label
+                key={p}
+                style={{ display: "inline-flex", alignItems: "center", gap: 7, minHeight: 24, fontSize: 14.5, color: COLORS.textSoft, cursor: "pointer" }}
+              >
                 <input
                   type="radio"
                   name="prioridade"
@@ -256,17 +289,21 @@ export default function FormularioDefeito({ onRegistrar }) {
                   data-testid={`radio-prioridade-${p}`}
                   checked={valores.prioridade === p}
                   onChange={alterar("prioridade")}
+                  aria-describedby={
+                    erros.prioridade ? "campo-prioridade-erro campo-prioridade-dica" : "campo-prioridade-dica"
+                  }
                   style={{ accentColor: COLORS.accent, width: 17, height: 17 }}
                 />
-                {p}
+                {p}{" "}
                 <span style={{ color: COLORS.muted, fontSize: 13 }}>
-                  {p === "P1" ? "· imediata" : p === "P2" ? "· próxima sprint" : "· backlog"}
+                  <span aria-hidden="true">· </span>
+                  {DESCRICAO_PRIORIDADE[p]}
                 </span>
               </label>
             ))}
           </div>
           {erros.prioridade && (
-            <span className="qa-erro" id="campo-prioridade-erro" role="alert" data-testid="campo-prioridade-erro" style={{ marginTop: 6, display: "block" }}>
+            <span className="qa-erro" id="campo-prioridade-erro" data-testid="campo-prioridade-erro" style={{ marginTop: 6, display: "block" }}>
               {erros.prioridade}
             </span>
           )}
@@ -313,7 +350,7 @@ export default function FormularioDefeito({ onRegistrar }) {
             </span>
           </label>
           {erros.aceite && (
-            <span className="qa-erro" id="campo-aceite-erro" role="alert" data-testid="campo-aceite-erro" style={{ marginTop: 6, display: "block" }}>
+            <span className="qa-erro" id="campo-aceite-erro" data-testid="campo-aceite-erro" style={{ marginTop: 6, display: "block" }}>
               {erros.aceite}
             </span>
           )}

@@ -5,7 +5,11 @@ import { COLORS } from "../theme.js";
 // Cabeçalho padrão de seção: um "eyebrow" laranja, o título em tipografia
 // condensada e, opcionalmente, uma linha de apoio. Usado em todas as páginas
 // para o ritmo visual ser o mesmo do começo ao fim.
-export default function SectionHeader({ eyebrow, titulo, apoio, id, sobreFaixa = false, align = "left" }) {
+//
+// O título é uma parada do Tab (veja TituloSecao em Acessivel.jsx) e o
+// `tituloId` dá nome à seção: com `aria-labelledby` apontando para ele, a
+// <section> vira uma região que o NVDA lista na tecla D.
+export default function SectionHeader({ eyebrow, titulo, apoio, id, tituloId, sobreFaixa = false, align = "left" }) {
   return (
     <div style={{ textAlign: align, marginBottom: 34 }} id={id}>
       {eyebrow && (
@@ -15,8 +19,10 @@ export default function SectionHeader({ eyebrow, titulo, apoio, id, sobreFaixa =
       )}
       <Reveal
         as="h2"
+        id={tituloId}
+        tabIndex={0}
         delay={0.05}
-        className="qa-display"
+        className="qa-display qa-titulo-secao"
         style={{
           fontSize: "clamp(1.75rem, 5vw, 2.45rem)",
           fontWeight: 700,

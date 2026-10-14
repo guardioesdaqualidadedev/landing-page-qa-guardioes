@@ -2,6 +2,7 @@ import React from "react";
 import Reveal from "../components/Reveal.jsx";
 import SectionHeader from "../components/Section.jsx";
 import OrbitBackground from "../components/OrbitBackground.jsx";
+import { LinkExterno, TituloSecao } from "../components/Acessivel.jsx";
 import { COLORS } from "../theme.js";
 import { ABERTURA, FECHAMENTO, VALORES, PRINCIPIOS, ORIGINAL } from "../content/manifesto.js";
 import { LINKS } from "../content/comunidade.js";
@@ -9,13 +10,18 @@ import { LINKS } from "../content/comunidade.js";
 // Um valor no formato "X mais que Y". A hierarquia visual carrega o argumento:
 // o item da esquerda em tipografia grande e laranja, o da direita menor e
 // discreto — exatamente o que a frase de fechamento diz.
+//
+// O item da esquerda é o título do cartão e uma parada do Tab: sem ele, os
+// quatro valores — o centro do manifesto — eram pulados por quem navega pelo
+// teclado, porque nenhum cartão tinha algo focável.
 function Valor({ valor, indice }) {
   return (
-    <Reveal delay={indice * 0.06} className="qa-card" style={{ padding: "26px 26px 24px" }} data-testid={`valor-${valor.n}`}>
-      <span className="qa-display" style={{ fontSize: 26, fontWeight: 700, color: COLORS.accent, lineHeight: 1 }}>
+    <Reveal as="li" delay={indice * 0.06} className="qa-card" style={{ padding: "26px 26px 24px" }} data-testid={`valor-${valor.n}`}>
+      <span className="qa-display" style={{ fontSize: 26, fontWeight: 700, color: COLORS.accentText, lineHeight: 1 }}>
         {valor.n}
       </span>
-      <p
+      <TituloSecao
+        as="h3"
         className="qa-display"
         style={{
           fontSize: "clamp(1.5rem, 4vw, 2rem)",
@@ -26,7 +32,7 @@ function Valor({ valor, indice }) {
         }}
       >
         {valor.esquerda}
-      </p>
+      </TituloSecao>
       <p style={{ margin: "0 0 14px", fontSize: 15.5, color: COLORS.muted }}>
         <em style={{ fontStyle: "normal", fontWeight: 700, color: COLORS.accentText }}>mais que</em>{" "}
         {valor.direita}
@@ -40,7 +46,11 @@ export default function Manifesto() {
   return (
     <div data-testid="pagina-manifesto">
       {/* Cabeçalho da página */}
-      <section style={{ background: COLORS.band, color: COLORS.onBand, position: "relative", overflow: "hidden" }}>
+      <section
+        className="qa-faixa"
+        aria-labelledby="manifesto-titulo"
+        style={{ background: COLORS.band, color: COLORS.onBand, position: "relative", overflow: "hidden" }}
+      >
         <div style={{ position: "absolute", inset: 0, color: "#FFFFFF", opacity: 0.7 }}>
           <OrbitBackground />
         </div>
@@ -57,6 +67,8 @@ export default function Manifesto() {
           </Reveal>
           <Reveal delay={0.05}>
             <h1
+              id="manifesto-titulo"
+              tabIndex={-1}
               className="qa-display"
               data-testid="titulo-manifesto"
               style={{ fontSize: "clamp(2.3rem, 8vw, 4.4rem)", fontWeight: 700, margin: 0, maxWidth: 860 }}
@@ -72,13 +84,16 @@ export default function Manifesto() {
         </div>
       </section>
 
-      {/* Os quatro valores */}
-      <section className="qa-wrap qa-section" id="valores">
-        <div className="qa-grid2" data-testid="valores">
+      {/* Os quatro valores. A abertura termina em "passamos a valorizar:", então
+          o título da seção é só para o leitor de tela — na tela, a frase já
+          apresenta a lista. */}
+      <section className="qa-wrap qa-section" id="valores" aria-labelledby="valores-titulo">
+        <h2 id="valores-titulo" className="qa-sr-only">Os quatro valores</h2>
+        <ol className="qa-grid2 qa-lista-limpa" data-testid="valores">
           {VALORES.map((v, i) => (
             <Valor key={v.n} valor={v} indice={i} />
           ))}
-        </div>
+        </ol>
 
         <Reveal
           delay={0.1}
@@ -101,10 +116,11 @@ export default function Manifesto() {
       </section>
 
       {/* Princípios */}
-      <section className="qa-wrap qa-section" id="principios">
+      <section className="qa-wrap qa-section" id="principios" aria-labelledby="principios-titulo">
         <SectionHeader
           eyebrow="Princípios"
           titulo="Doze princípios por trás destes valores"
+          tituloId="principios-titulo"
           apoio="A mesma estrutura do manifesto original, relida a partir do trabalho de quem garante qualidade."
         />
         <ol style={{ margin: 0, padding: 0, listStyle: "none" }} data-testid="principios">
@@ -132,10 +148,11 @@ export default function Manifesto() {
       </section>
 
       {/* Manifesto original, para comparação */}
-      <section className="qa-wrap qa-section" id="original">
+      <section className="qa-wrap qa-section" id="original" aria-labelledby="original-titulo">
         <SectionHeader
           eyebrow="A origem"
           titulo="O Manifesto Ágil original"
+          tituloId="original-titulo"
           apoio="Nossa versão não substitui o manifesto de 2001 — ela o aplica ao trabalho de qualidade. Vale ler o original inteiro."
         />
         <Reveal className="qa-card" style={{ padding: "30px 30px 26px" }} data-testid="manifesto-original">
@@ -184,22 +201,21 @@ export default function Manifesto() {
 
           <p style={{ fontSize: 12.5, lineHeight: 1.6, color: COLORS.muted, margin: "22px 0 0" }}>{ORIGINAL.aviso}</p>
 
-          <a
+          <LinkExterno
             className="qa-btn qa-btn-primario qa-btn-pequeno"
             href={ORIGINAL.fonte}
-            target="_blank"
-            rel="noopener noreferrer"
             style={{ marginTop: 18 }}
             data-testid="link-manifesto-original"
           >
-            Ler em agilemanifesto.org ↗
-          </a>
+            Ler em agilemanifesto.org <span aria-hidden="true">↗</span>
+          </LinkExterno>
         </Reveal>
       </section>
 
       {/* Como usar */}
-      <section className="qa-wrap qa-section">
+      <section className="qa-wrap qa-section" aria-labelledby="discorda-titulo">
         <Reveal
+          className="qa-faixa"
           style={{
             borderRadius: 20,
             padding: "36px 32px",
@@ -208,17 +224,17 @@ export default function Manifesto() {
             textAlign: "center",
           }}
         >
-          <h2 className="qa-display" style={{ fontSize: "clamp(1.6rem, 5vw, 2.3rem)", fontWeight: 700, margin: 0 }}>
+          <TituloSecao id="discorda-titulo" className="qa-display" style={{ fontSize: "clamp(1.6rem, 5vw, 2.3rem)", fontWeight: 700, margin: 0 }}>
             Discorda de algum valor?
-          </h2>
+          </TituloSecao>
           <p style={{ fontSize: 16, lineHeight: 1.6, color: COLORS.onBandBody, maxWidth: 560, margin: "14px auto 24px" }}>
             Este manifesto é da comunidade e é um documento vivo. Todo item aqui pode ser
             questionado no canal <strong style={{ color: COLORS.accent }}>#feedbacks-melhorias</strong> —
             é exatamente para isso que ele existe.
           </p>
-          <a className="qa-btn qa-btn-primario" href={LINKS.discord} target="_blank" rel="noopener noreferrer">
+          <LinkExterno className="qa-btn qa-btn-primario" href={LINKS.discord}>
             Abrir discussão no Discord
-          </a>
+          </LinkExterno>
         </Reveal>
       </section>
     </div>

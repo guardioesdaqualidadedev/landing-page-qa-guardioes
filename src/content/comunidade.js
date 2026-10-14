@@ -23,11 +23,13 @@ export const PRINCIPIO_CHAVE = {
 export const MISSAO =
   "Ser um espaço gratuito, organizado e seguro onde profissionais de QA aprendem com prática real, trocam experiência sem hierarquia e encontram oportunidades — do primeiro emprego à especialização em automação e qualidade.";
 
+// `falado`: como o leitor de tela deve dizer o valor, quando a forma escrita
+// é abreviada ("24h" vira "vinte e quatro agá" no NVDA).
 export const STATS = [
   { valor: "8", label: "Canais no Discord" },
   { valor: "6", label: "Grupos no WhatsApp" },
   { valor: "100%", label: "Gratuita e aberta" },
-  { valor: "24h", label: "Meta de resposta a dúvidas" },
+  { valor: "24h", falado: "24 horas", label: "Meta de resposta a dúvidas" },
 ];
 
 export const OBJETIVOS = [
@@ -172,12 +174,11 @@ export const ADMINS = [
     linkedin: "https://www.linkedin.com/in/camila-lopes-ferreira-carvalho43235429/",
   },
   {
-    nome: "Amanda",
-    onde: "WhatsApp e Design",
-    papeis: ["Liderança de Design", "Administração do WhatsApp"],
-    escopo:
-      "Direção visual da comunidade — identidade, peças de divulgação e consistência da marca em todos os canais; moderação dos grupos do WhatsApp",
-    linkedin: "https://www.linkedin.com/in/amanda-marino-28b34a324/",
+    nome: "Gabriel",
+    onde: "WhatsApp",
+    papeis: ["Administração do WhatsApp"],
+    escopo: "Grupos do WhatsApp: acolhimento de quem entra, moderação do dia a dia e roteamento das conversas para o canal certo",
+    linkedin: "https://www.linkedin.com/in/gabriel-rocc%C3%A0-32a978421/",
   },
   {
     nome: "Patrícia",
@@ -185,6 +186,20 @@ export const ADMINS = [
     papeis: ["Administração do WhatsApp"],
     escopo: "Grupos do WhatsApp: acolhimento de quem entra, moderação do dia a dia e roteamento das conversas para o canal certo",
     linkedin: "https://www.linkedin.com/in/patricia-silva-correa/",
+  },
+];
+
+// Administração afastada temporariamente — não aparece no site. Para voltar,
+// basta mover o cartão de novo para ADMINS (a posição na lista é a ordem na
+// tela). A Amanda saiu em outubro de 2026.
+export const ADMINS_AFASTADOS = [
+  {
+    nome: "Amanda",
+    onde: "WhatsApp e Design",
+    papeis: ["Liderança de Design", "Administração do WhatsApp"],
+    escopo:
+      "Direção visual da comunidade — identidade, peças de divulgação e consistência da marca em todos os canais; moderação dos grupos do WhatsApp",
+    linkedin: "https://www.linkedin.com/in/amanda-marino-28b34a324/",
   },
 ];
 

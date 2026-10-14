@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import BrandMark from "./BrandMark.jsx";
+import { LinkExterno } from "./Acessivel.jsx";
 import { COLORS } from "../theme.js";
 import { LINKS } from "../content/comunidade.js";
 import { SYLLABUS } from "../content/syllabus.js";
@@ -56,7 +57,7 @@ export default function Footer() {
   };
 
   return (
-    <footer data-testid="site-footer" style={{ background: COLORS.band, color: COLORS.onBand, marginTop: 90 }}>
+    <footer data-testid="site-footer" className="qa-faixa" style={{ background: COLORS.band, color: COLORS.onBand, marginTop: 90 }}>
       <div className="qa-wrap" style={{ paddingTop: 54, paddingBottom: 34 }}>
         <div className="qa-footer-grid" style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1.1fr", gap: 36 }}>
           <div>
@@ -81,48 +82,58 @@ export default function Footer() {
             <ContadorVisitas />
           </div>
 
-          <div>
-            <h3 className="qa-eyebrow" style={{ color: COLORS.onBandMuted, marginBottom: 10 }}>
+          {/* Títulos das colunas em h2: no rodapé eles são o primeiro nível — e
+              na página 404, que só tem o h1, um h3 aqui pularia um nível. */}
+          <nav aria-labelledby="rodape-navegar">
+            <h2 id="rodape-navegar" className="qa-eyebrow" style={{ color: COLORS.onBandMuted, marginBottom: 10 }}>
               Navegar
-            </h3>
-            <Link to="/" style={link}>A comunidade</Link>
-            <Link to="/manifesto" style={link}>Manifesto Ágil de Testes</Link>
-            <Link to="/playground" style={link}>Playground QA</Link>
-            <Link to="/#parceiros" style={link}>Parceiros</Link>
-          </div>
+            </h2>
+            <ul className="qa-lista-limpa">
+              <li><Link to="/" style={link}>A comunidade</Link></li>
+              <li><Link to="/manifesto" style={link}>Manifesto Ágil de Testes</Link></li>
+              <li><Link to="/playground" style={link}>Playground QA</Link></li>
+              <li><Link to="/#parceiros" style={link}>Parceiros</Link></li>
+            </ul>
+          </nav>
 
           <div>
-            <h3 className="qa-eyebrow" style={{ color: COLORS.onBandMuted, marginBottom: 10 }}>
+            <h2 className="qa-eyebrow" style={{ color: COLORS.onBandMuted, marginBottom: 10 }}>
               Participar
-            </h3>
-            <a href={LINKS.discord} target="_blank" rel="noopener noreferrer" style={link}>Servidor no Discord</a>
-            <a href={LINKS.whatsapp} target="_blank" rel="noopener noreferrer" style={link}>Comunidade no WhatsApp</a>
-            <a href={LINKS.linkedin} target="_blank" rel="noopener noreferrer" style={link}>Página no LinkedIn</a>
-            <a href={LINKS.github} target="_blank" rel="noopener noreferrer" style={link}>Código no GitHub</a>
+            </h2>
+            <ul className="qa-lista-limpa">
+              <li><LinkExterno href={LINKS.discord} style={link}>Servidor no Discord</LinkExterno></li>
+              <li><LinkExterno href={LINKS.whatsapp} style={link}>Comunidade no WhatsApp</LinkExterno></li>
+              <li><LinkExterno href={LINKS.linkedin} style={link}>Página no LinkedIn</LinkExterno></li>
+              <li><LinkExterno href={LINKS.github} style={link}>Código no GitHub</LinkExterno></li>
+            </ul>
           </div>
 
           <div>
-            <h3 className="qa-eyebrow" style={{ color: COLORS.onBandMuted, marginBottom: 10 }}>
+            <h2 className="qa-eyebrow" style={{ color: COLORS.onBandMuted, marginBottom: 10 }}>
               Estudar
-            </h3>
-            <a
-              href={SYLLABUS.links.pdfPt}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={link}
-              data-testid="footer-syllabus-pdf"
-            >
-              Syllabus CTFL {SYLLABUS.versao} em PDF
-            </a>
-            <a href={SYLLABUS.links.oficial} target="_blank" rel="noopener noreferrer" style={link}>
-              Certificação no ISTQB
-            </a>
-            <a href={SYLLABUS.links.bstqb} target="_blank" rel="noopener noreferrer" style={link}>
-              BSTQB — board brasileiro
-            </a>
-            <Link to="/playground#certificado" style={link}>
-              Certificado do playground
-            </Link>
+            </h2>
+            <ul className="qa-lista-limpa">
+              <li>
+                <LinkExterno href={SYLLABUS.links.pdfPt} style={link} data-testid="footer-syllabus-pdf">
+                  Syllabus CTFL {SYLLABUS.versao} em PDF
+                </LinkExterno>
+              </li>
+              <li>
+                <LinkExterno href={SYLLABUS.links.oficial} style={link}>
+                  Certificação no ISTQB
+                </LinkExterno>
+              </li>
+              <li>
+                <LinkExterno href={SYLLABUS.links.bstqb} style={link}>
+                  BSTQB — board brasileiro
+                </LinkExterno>
+              </li>
+              <li>
+                <Link to="/playground#certificado" style={link}>
+                  Certificado do playground
+                </Link>
+              </li>
+            </ul>
             <p style={{ fontSize: 12, color: COLORS.onBandMuted, margin: "10px 0 0", lineHeight: 1.55 }}>
               O programa oficial do exame, gratuito e em português.
             </p>
